@@ -8,7 +8,8 @@
 
 class UGridConfigurationActorComponent;
 class AGridActor;
-
+class ATBSCameraPawnBase;
+class AHeroCharacter;
 
 UENUM()
 enum class EGamePhase : uint8
@@ -30,8 +31,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE AGridActor* GetGridActor() const;
 
+	FORCEINLINE ATBSCameraPawnBase* GetCameraPawn() const;
+
+	FORCEINLINE TArray<AHeroCharacter*> GetHeroCharacters() const;
+
 	UFUNCTION(BlueprintCallable)
 	void UpdateGameState(EGamePhase GamePhase);
+	
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE EGamePhase GetCurrentGamePhase() const;
@@ -41,7 +47,15 @@ public:
 	
 protected:
 	virtual void BeginPlay() override;
+
+protected:
 	UPROPERTY()
 	AGridActor* MapGridActor {nullptr};
 	EGamePhase CurrentPhase {EGamePhase::Exploration};
+
+	UPROPERTY()
+	ATBSCameraPawnBase* CameraPawn { nullptr };
+
+	UPROPERTY()
+	TArray<AHeroCharacter*> HeroCharacters; 
 };

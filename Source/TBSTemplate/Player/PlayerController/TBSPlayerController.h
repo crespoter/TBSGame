@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Game/TBSGameState.h"
 #include "GameFramework/PlayerController.h"
 #include "TBSPlayerController.generated.h"
 
@@ -13,5 +14,17 @@ UCLASS()
 class TBSTEMPLATE_API ATBSPlayerController : public APlayerController
 {
 	GENERATED_BODY()
+public:
 	ATBSPlayerController(const FObjectInitializer& ObjectInitializer);
+protected:
+	virtual void BeginPlay() override;
+
+	UFUNCTION()
+	void HandleGamePhaseChange(const EGamePhase GamePhase);
+	
+protected:
+	UPROPERTY()
+	ATBSGameState* GameState { nullptr };
+
+
 };

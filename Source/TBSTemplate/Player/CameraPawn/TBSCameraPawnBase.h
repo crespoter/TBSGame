@@ -25,6 +25,7 @@ struct FPlayerInputActions
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UInputAction* SelectAction { nullptr };
 };
+
 UCLASS()
 class TBSTEMPLATE_API ATBSCameraPawnBase : public APawn
 {

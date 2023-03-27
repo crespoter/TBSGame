@@ -11,5 +11,4 @@ UCLASS()
 class TBSTEMPLATE_API ATBSTemplateGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
-	
 };

@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Player/TBSCameraPawnBase.h"
+#include "Player/CameraPawn/TBSCameraPawnBase.h"
 
-#include "TBSGameState.h"
-#include "TBSPlayerController.h"
+#include "Game/TBSGameState.h"
+#include "Player/PlayerController/TBSPlayerController.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInput/Public/InputMappingContext.h"
