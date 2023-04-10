@@ -45,7 +45,25 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool IsValidIndex(const FIntPoint &GridIndex) const;
 
+	UFUNCTION(Exec, CallInEditor, Category = "Grid")
+	void DrawDebugGrid() const;
 
+	UFUNCTION(Exec, CallInEditor, Category = "Grid")
+	void ClearAllDebugLines() const;
+
+	/**
+	 * Updates the visual state of a grid unit. Use RenderVisualGrid method to render as per the state
+	*/
+	UFUNCTION(BlueprintCallable)
+	void UpdateVisualGridState(FIntPoint& Index, const FVisibleGridState& InVisibleGridState);
+
+	UFUNCTION(BlueprintCallable)
+	void ClearVisualGridState();
+
+	
+	UFUNCTION(BlueprintCallable)
+	void RenderVisualGrid();
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -53,19 +71,8 @@ protected:
 	void SetInstancedMeshGridColors(const uint16 MeshInstanceIndex,
 		const FColor &EdgeColor, const FColor &BackgroundColor);
 
-	FGridColorData& GetColorDataForState(uint8 StateBitFlag) const;
 
-	UFUNCTION(BlueprintCallable)
-	void AddStateToTile(const FIntPoint& Index, const EGridUnitState GridStateToAdd);
-	
-	UFUNCTION(BlueprintCallable)
-	void RemoveStateFromTile(const FIntPoint& Index, const EGridUnitState GridStateToAdd);
-
-	UFUNCTION(BlueprintCallable)
-void SetTileVisualToState(const FIntPoint& TileIndex, const EGridUnitState GridState);
-
-	void SetTileVisualToState(const FIntPoint& TileIndex, const uint8 GridState);
-
+	void DrawGrid();
 	
 public:
 	virtual void PostInitializeComponents() override;
@@ -90,5 +97,11 @@ protected:
 
 	UPROPERTY()
 	TMap<FIntPoint, FGridState> GridUnitStateMap;
+
+	UPROPERTY()
+	TMap<FIntPoint, FVisibleGridState> VisibleGridStateMap;
+
+	UPROPERTY()
+	bool bIsGridGenerated { false };
 	
 };
