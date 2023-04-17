@@ -18,6 +18,11 @@ AHeroCharacter::AHeroCharacter()
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>("Spring arm component");
 	check(CameraComponent);
 	check(SpringArmComponent);
+
+	SpringArmComponent->bInheritPitch = false;
+	SpringArmComponent->bInheritRoll = false;
+	SpringArmComponent->bInheritYaw = false;
+
 	CameraComponent->SetupAttachment(SpringArmComponent);
 	SpringArmComponent->SetupAttachment(GetCapsuleComponent());
 }

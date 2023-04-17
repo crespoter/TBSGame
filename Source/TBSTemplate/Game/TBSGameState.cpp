@@ -8,6 +8,12 @@
 #include "GridSystem/GridActor/GridActor.h"
 #include "TBSTemplate/Player/CameraPawn/TBSCameraPawnBase.h"
 #include "TBSTemplate/Player/HeroCharacter/HeroCharacter.h"
+#include "TBSTemplate/Game/BattleStateComponent.h"
+
+ATBSGameState::ATBSGameState()
+{
+	BattleStateComponent = CreateDefaultSubobject<UBattleStateComponent>(TEXT("Battle State Component"));
+}
 
 AGridActor* ATBSGameState::GetGridActor() const
 {

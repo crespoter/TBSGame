@@ -4,6 +4,7 @@
 #include "Components/InstancedStaticMeshComponent.h"
 #include "GridSystem/GridSystemTypes.h"
 #include "GridSystem/GridBlockerVolume/GridBlockerVolume.h"
+#include "TBSTemplate/Game/TBSGameState.h"
 
 AGridActor::AGridActor()
 {
@@ -28,7 +29,8 @@ void AGridActor::SetInstancedMeshGridColors(const uint16 MeshInstanceIndex, cons
 	 * 6 => Edge Opacity
 	 * 7 => Background Opacity
 	 */
-	const TArray<float> DataValues {
+	const TArray<float> DataValues 
+	{
 		EdgeColor.R / 255.0f, EdgeColor.G / 255.0f, EdgeColor.B / 255.0f,
 		BackgroundColor.R  / 255.0f, BackgroundColor.G  / 255.0f, BackgroundColor.B  / 255.0f,
 		EdgeColor.A  / 255.0f, BackgroundColor.A  / 255.0f
@@ -39,7 +41,6 @@ void AGridActor::SetInstancedMeshGridColors(const uint16 MeshInstanceIndex, cons
 		InstancedStaticMeshComponent->SetCustomDataValue(MeshInstanceIndex, i, DataValues[i], true);
 	}
 }
-
 
 void AGridActor::PostInitializeComponents()
 {
@@ -129,24 +130,27 @@ FVector AGridActor::GetWorldLocationFromIndex(const FIntPoint& Idx) const
 
 void AGridActor::SetGridUnitAsSelected(const FIntPoint &GridIndex)
 {
+	/*
 	DeselectGrid();
 	AddStateToTile(GridIndex, EGridUnitState::Selected);
-	SelectedIndex = GridIndex;
+	SelectedIndex = GridIndex;*/
 }
 
 void AGridActor::SetGridUnitAsHovering(const FIntPoint& GridIndex)
 {
+	/*
 	if (GridIndex == HoveringIndex) return;
 	UnhoverGridUnit();
 
 	AddStateToTile(GridIndex, EGridUnitState::Hover);
-	HoveringIndex = GridIndex;
+	HoveringIndex = GridIndex;*/
 }
 
 void AGridActor::DeselectGrid()
 {
+	/*
 	RemoveStateFromTile(SelectedIndex, EGridUnitState::Selected);
-	SelectedIndex.X = SelectedIndex.Y = -1;
+	SelectedIndex.X = SelectedIndex.Y = -1;*/
 }
 
 void AGridActor::UnhoverGridUnit()

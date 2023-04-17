@@ -7,7 +7,7 @@
 #include "GridSystem/GridSystemTypes.h"
 #include "GridActor.generated.h"
 
-
+class ATBSGameState;
 
 UCLASS()
 class TBSTEMPLATE_API AGridActor : public AActor
@@ -102,6 +102,5 @@ protected:
 	TMap<FIntPoint, FVisibleGridState> VisibleGridStateMap;
 
 	UPROPERTY()
-	bool bIsGridGenerated { false };
-	
+	bool bIsGridGenerated { false };	
 };

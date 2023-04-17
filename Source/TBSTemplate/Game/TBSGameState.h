@@ -10,6 +10,7 @@ class UGridConfigurationActorComponent;
 class AGridActor;
 class ATBSCameraPawnBase;
 class AHeroCharacter;
+class UBattleStateComponent;
 
 UENUM()
 enum class EGamePhase : uint8
@@ -28,6 +29,9 @@ class TBSTEMPLATE_API ATBSGameState : public AGameStateBase
 	GENERATED_BODY()
 
 public:
+
+	ATBSGameState();
+
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE AGridActor* GetGridActor() const;
 
@@ -57,5 +61,8 @@ protected:
 	ATBSCameraPawnBase* CameraPawn { nullptr };
 
 	UPROPERTY()
-	TArray<AHeroCharacter*> HeroCharacters; 
+	TArray<AHeroCharacter*> HeroCharacters;
+
+	UPROPERTY()
+	UBattleStateComponent* BattleStateComponent { nullptr };
 };
