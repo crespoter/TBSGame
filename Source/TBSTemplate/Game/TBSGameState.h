@@ -11,11 +11,13 @@ class AGridActor;
 class ATBSCameraPawnBase;
 class AHeroCharacter;
 class UBattleStateComponent;
+class ACombatSituation;
 
 UENUM()
 enum class EGamePhase : uint8
 {
 	Exploration,
+	Deployment,
 	Battle,
 	Max
 };
@@ -36,16 +38,16 @@ public:
 	FORCEINLINE AGridActor* GetGridActor() const;
 
 	FORCEINLINE ATBSCameraPawnBase* GetCameraPawn() const;
-
-	FORCEINLINE TArray<AHeroCharacter*> GetHeroCharacters() const;
-
+	
 	UFUNCTION(BlueprintCallable)
-	void UpdateGameState(EGamePhase GamePhase);
+	void StartDeploymentPhase(ACombatSituation* CombatSituation);
 	
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE EGamePhase GetCurrentGamePhase() const;
 
+	// Properties
+	
 	UPROPERTY(BlueprintAssignable)
 	FonGamePhaseChanged GamePhaseChangedEvent;
 	
@@ -53,16 +55,8 @@ protected:
 	virtual void BeginPlay() override;
 
 protected:
-	UPROPERTY()
-	AGridActor* MapGridActor {nullptr};
 	EGamePhase CurrentPhase {EGamePhase::Exploration};
-
-	UPROPERTY()
-	ATBSCameraPawnBase* CameraPawn { nullptr };
-
-	UPROPERTY()
-	TArray<AHeroCharacter*> HeroCharacters;
-
-	UPROPERTY()
+	
+	UPROPERTY(EditDefaultsOnly)
 	UBattleStateComponent* BattleStateComponent { nullptr };
 };

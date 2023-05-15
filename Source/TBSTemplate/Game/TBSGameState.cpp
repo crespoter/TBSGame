@@ -15,35 +15,10 @@ ATBSGameState::ATBSGameState()
 	BattleStateComponent = CreateDefaultSubobject<UBattleStateComponent>(TEXT("Battle State Component"));
 }
 
-AGridActor* ATBSGameState::GetGridActor() const
+void ATBSGameState::StartDeploymentPhase(ACombatSituation* CombatSituation)
 {
-	return MapGridActor;
-}
-
-ATBSCameraPawnBase* ATBSGameState::GetCameraPawn() const
-{
-	return CameraPawn;
-}
-
-TArray<AHeroCharacter*> ATBSGameState::GetHeroCharacters() const
-{
-	return HeroCharacters;
-}
-
-void ATBSGameState::UpdateGameState(const EGamePhase GamePhase)
-{
-	if (CurrentPhase != GamePhase)
-	{
-		CurrentPhase = GamePhase;
-		switch(GamePhase)
-		{
-		case EGamePhase::Battle:
-		case EGamePhase::Exploration:
-		case EGamePhase::Max:
-			break;
-		}
-		GamePhaseChangedEvent.Broadcast(CurrentPhase);
-	}
+	CurrentPhase = EGamePhase::Deployment;
+	GamePhaseChangedEvent.Broadcast(CurrentPhase);
 }
 
 EGamePhase ATBSGameState::GetCurrentGamePhase() const
@@ -54,13 +29,4 @@ EGamePhase ATBSGameState::GetCurrentGamePhase() const
 void ATBSGameState::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	MapGridActor = TBSHelpers::GetActorOfClass<AGridActor>(GetWorld());
-	check(MapGridActor);
-	
-	CameraPawn = TBSHelpers::GetActorOfClass<ATBSCameraPawnBase>(GetWorld());
-	check(CameraPawn);
-
-	HeroCharacters = TBSHelpers::GetActorsOfClass<AHeroCharacter>(GetWorld());
-	check(HeroCharacters.Num());
 }

@@ -7,6 +7,8 @@
 #include "BattleStateComponent.generated.h"
 
 
+class ACombatSituation;
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class TBSTEMPLATE_API UBattleStateComponent : public UActorComponent
 {
@@ -16,8 +18,9 @@ public:
 	// Sets default values for this component's properties
 	UBattleStateComponent();
 
+	void Initialize(ACombatSituation* CombatSituation);
+	
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
-		
 };
