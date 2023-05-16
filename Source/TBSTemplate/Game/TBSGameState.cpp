@@ -2,6 +2,8 @@
 
 
 #include "TBSGameState.h"
+
+#include "Kismet/GameplayStatics.h"
 #include "TBSTemplate/Game/BattleStateComponent.h"
 
 ATBSGameState::ATBSGameState()

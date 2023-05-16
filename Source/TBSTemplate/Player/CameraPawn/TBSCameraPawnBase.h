@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
+#include "Game/TBSGameState.h"
 #include "GameFramework/Pawn.h"
 #include "TBSCameraPawnBase.generated.h"
 
@@ -24,6 +25,9 @@ struct FPlayerInputActions
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UInputAction* SelectAction { nullptr };
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UInputAction* ExecuteAction {nullptr};
 };
 
 UCLASS()
@@ -44,10 +48,16 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UFUNCTION()
 	void HandleCameraMovementInputEvent(const FInputActionValue& ActionValue);
 
+	UFUNCTION()
 	void HandleSelectInputEvent(const FInputActionValue& ActionValue);
 
+	UFUNCTION()
+	void HandleExecuteInputEvent(const FInputActionValue& ActionValue);
+
+	UFUNCTION()
 	void HandleHover();
 
 	UFUNCTION()
@@ -102,4 +112,6 @@ protected:
 
 	UPROPERTY()
 	ATBSGameState* CachedGameState {nullptr};
+
+	EGamePhase CurrentGamePhase {EGamePhase::Exploration};
 };

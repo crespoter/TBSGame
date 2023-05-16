@@ -2,6 +2,10 @@
 
 #include "Player/CameraPawn/TBSCameraPawnBase.h"
 
+#include "AIController.h"
+#include "EngineUtils.h"
+#include "NavigationPath.h"
+#include "NavigationSystem.h"
 #include "Game/TBSGameState.h"
 #include "Player/PlayerController/TBSPlayerController.h"
 #include "Camera/CameraComponent.h"
@@ -9,7 +13,9 @@
 #include "EnhancedInput/Public/InputMappingContext.h"
 #include "EnhancedInput/Public/EnhancedInputSubsystems.h"
 #include "EnhancedInput/Public/EnhancedInputComponent.h"
+#include "GameFramework/PawnMovementComponent.h"
 #include "GridSystem/GridActor/GridActor.h"
+#include "Player/HeroCharacter/HeroCharacter.h"
 
 
 // Sets default values
@@ -45,7 +51,6 @@ void ATBSCameraPawnBase::BeginPlay()
 	check(CachedGameState);
 
 	CachedGameState->GamePhaseChangedEvent.AddDynamic(this, &ATBSCameraPawnBase::HandleGamePhaseChanged);
-	
 }
 
 void ATBSCameraPawnBase::HandleCameraMovementInputEvent(const FInputActionValue& ActionValue)
@@ -69,37 +74,69 @@ void ATBSCameraPawnBase::HandleCameraMovementInputEvent(const FInputActionValue&
 
 void ATBSCameraPawnBase::HandleSelectInputEvent(const FInputActionValue& ActionValue)
 {
+	if (CurrentGamePhase == EGamePhase::Battle || CurrentGamePhase == EGamePhase::Deployment)
+	{
+		FHitResult HitResult;
+		CachedPlayerController->GetHitResultUnderCursor(GridChannel, true, HitResult);
+		if (HitResult.bBlockingHit)
+		{
+			if (AGridActor* GridActor = Cast<AGridActor>(HitResult.GetActor()))
+			{
+				GridActor->SetGridUnitAsSelected(GridActor->GetIndexFromLocation(FVector2f(HitResult.Location.X,
+					HitResult.Location.Y)));
+			}
+		}
+	}
+}
+
+void ATBSCameraPawnBase::HandleExecuteInputEvent(const FInputActionValue& ActionValue)
+{
 	FHitResult HitResult;
 	CachedPlayerController->GetHitResultUnderCursor(GridChannel, true, HitResult);
 	if (HitResult.bBlockingHit)
 	{
-		if (AGridActor* GridActor = Cast<AGridActor>(HitResult.GetActor()))
+		if (CurrentGamePhase == EGamePhase::Exploration)
 		{
-
-			GridActor->SetGridUnitAsSelected(GridActor->GetIndexFromLocation(FVector2f(HitResult.Location.X,
-				HitResult.Location.Y)));
+			// TODO: Handle in game state
+			/*
+			UNavigationSystemV1* NavSys = UNavigationSystemV1::GetCurrent(GetWorld());
+			
+			if (NavSys)
+			{
+				FVector StartLocation = GetActorLocation();
+				FVector TargetLocation = FVector(1000.0f, 0.0f, 0.0f);
+				UNavigationPath* NavPath;
+				NavPath = NavSys->FindPathToLocationSynchronously(GetWorld(), StartLocation, TargetLocation);
+				TArray<FVector> Waypoints = NavPath->PathPoints;
+			}*/
+			const AHeroCharacter* Hero = *(TActorIterator<AHeroCharacter>(GetWorld()));
+			AAIController* AIController = Cast<AAIController>(Hero->GetController());
+			AIController->MoveToLocation(HitResult.Location);
 		}
 	}
 }
 
 void ATBSCameraPawnBase::HandleHover()
 {
-	FHitResult HitResult;
-	CachedPlayerController->GetHitResultUnderCursor(GridChannel, true, HitResult);
-	if (HitResult.bBlockingHit)
+	if (CurrentGamePhase == EGamePhase::Battle || CurrentGamePhase == EGamePhase::Deployment)
 	{
-		if (AGridActor* GridActor = Cast<AGridActor>(HitResult.GetActor()))
+		FHitResult HitResult;
+		CachedPlayerController->GetHitResultUnderCursor(GridChannel, true, HitResult);
+		if (HitResult.bBlockingHit)
 		{
+			if (AGridActor* GridActor = Cast<AGridActor>(HitResult.GetActor()))
+			{
 
-			GridActor->SetGridUnitAsHovering(GridActor->GetIndexFromLocation(FVector2f(HitResult.Location.X,
-				HitResult.Location.Y)));
+				GridActor->SetGridUnitAsHovering(GridActor->GetIndexFromLocation(FVector2f(HitResult.Location.X,
+					HitResult.Location.Y)));
+			}
 		}
 	}
 }
 
 void ATBSCameraPawnBase::HandleGamePhaseChanged(EGamePhase NewGamePhase)
 {
-	UE_LOG(LogTemp, Error, TEXT("HANDLING PHASE CHANGE"));
+	CurrentGamePhase = NewGamePhase;
 }
 
 // Called every frame
@@ -137,9 +174,11 @@ void ATBSCameraPawnBase::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 	UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent);
 
-
 	EnhancedInputComponent->BindAction(PlayerInputActions.SelectAction,
 		ETriggerEvent::Triggered, this, &ATBSCameraPawnBase::HandleSelectInputEvent);
+
+	EnhancedInputComponent->BindAction(PlayerInputActions.ExecuteAction,
+		ETriggerEvent::Triggered, this, &ATBSCameraPawnBase::HandleExecuteInputEvent);
 
 	EnhancedInputComponent->BindAction(PlayerInputActions.CameraMovementAction,
 		ETriggerEvent::Triggered, this, &ATBSCameraPawnBase::HandleCameraMovementInputEvent);

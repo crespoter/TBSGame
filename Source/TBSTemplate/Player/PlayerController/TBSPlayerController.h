@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "TBSPlayerController.generated.h"
 
+enum class EGamePhase : uint8;
 class ATBSGameState;
 class AHeroCharacter;
 class ATBSCameraPawnBase;

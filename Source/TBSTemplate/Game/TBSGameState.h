@@ -45,7 +45,7 @@ public:
 	
 	UPROPERTY(BlueprintAssignable)
 	FonGamePhaseChanged GamePhaseChangedEvent;
-	
+
 protected:
 	virtual void BeginPlay() override;
 

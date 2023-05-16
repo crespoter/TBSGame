@@ -12,18 +12,10 @@ class UCameraComponent;
 class USpringArmComponent;
 class UInputMappingContext;
 class UInputAction;
+class AHeroAIController;
 
 
-
-USTRUCT(BlueprintType)
-struct FExplorationInputActions
-{
-	GENERATED_BODY();
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UInputAction* Movement { nullptr };
-};
-
-
+// Character class for all playable and enemy characters
 UCLASS()
 class TBSTEMPLATE_API AHeroCharacter : public ACharacter
 {
@@ -35,29 +27,10 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	
-	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-private:
-	UFUNCTION()
-	void HandleMovementInput(const FInputActionValue& ActionValue);
-
-public:	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	UCameraComponent* CameraComponent { nullptr };
-
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	USpringArmComponent* SpringArmComponent { nullptr };
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
-	UInputMappingContext* ExplorationInputMappingContext { nullptr };
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
-	FExplorationInputActions CharacterMovementAction;
+	UPROPERTY()
+	AHeroAIController* AIController {nullptr};
 };
