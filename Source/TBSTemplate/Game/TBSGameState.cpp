@@ -2,12 +2,6 @@
 
 
 #include "TBSGameState.h"
-
-#include "EngineUtils.h"
-#include "Helpers/TBSHelpers.h"
-#include "GridSystem/GridActor/GridActor.h"
-#include "TBSTemplate/Player/CameraPawn/TBSCameraPawnBase.h"
-#include "TBSTemplate/Player/HeroCharacter/HeroCharacter.h"
 #include "TBSTemplate/Game/BattleStateComponent.h"
 
 ATBSGameState::ATBSGameState()
@@ -24,6 +18,11 @@ void ATBSGameState::StartDeploymentPhase(ACombatSituation* CombatSituation)
 EGamePhase ATBSGameState::GetCurrentGamePhase() const
 {
 	return CurrentPhase;
+}
+
+UBattleStateComponent* ATBSGameState::GetBattleStateComponent() const
+{
+	return BattleStateComponent;
 }
 
 void ATBSGameState::BeginPlay()

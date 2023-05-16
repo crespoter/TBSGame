@@ -3,13 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Game/TBSGameState.h"
 #include "GameFramework/PlayerController.h"
 #include "TBSPlayerController.generated.h"
 
-/**
- * 
- */
+class ATBSGameState;
+class AHeroCharacter;
+class ATBSCameraPawnBase;
+
 UCLASS()
 class TBSTEMPLATE_API ATBSPlayerController : public APlayerController
 {
@@ -26,5 +26,9 @@ protected:
 	UPROPERTY()
 	ATBSGameState* GameState { nullptr };
 
+	UPROPERTY()
+	AHeroCharacter* HeroCharacter {nullptr};
 
+	UPROPERTY()
+	ATBSCameraPawnBase* BattleCameraPawn {nullptr};
 };

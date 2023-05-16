@@ -33,11 +33,6 @@ class TBSTEMPLATE_API ATBSGameState : public AGameStateBase
 public:
 
 	ATBSGameState();
-
-	UFUNCTION(BlueprintCallable)
-	FORCEINLINE AGridActor* GetGridActor() const;
-
-	FORCEINLINE ATBSCameraPawnBase* GetCameraPawn() const;
 	
 	UFUNCTION(BlueprintCallable)
 	void StartDeploymentPhase(ACombatSituation* CombatSituation);
@@ -45,7 +40,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE EGamePhase GetCurrentGamePhase() const;
-
+	FORCEINLINE UBattleStateComponent* GetBattleStateComponent() const;
 	// Properties
 	
 	UPROPERTY(BlueprintAssignable)

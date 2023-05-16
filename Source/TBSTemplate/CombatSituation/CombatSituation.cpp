@@ -20,18 +20,21 @@ void ACombatSituation::BeginPlay()
 	Super::BeginPlay();
 	check(!NPCCombatantId.IsNone());
 	check(GridActor);
-	CombatTriggerCollider->OnComponentHit.AddDynamic(this, &ACombatSituation::OnTriggerColliderHit);
+	CombatTriggerCollider->OnComponentBeginOverlap.AddDynamic(this, &ACombatSituation::OnTriggerColliderHit);
 	GameState = Cast<ATBSGameState>(GetWorld()->GetGameState());
 	check(GameState);
 }
 
-void ACombatSituation::OnTriggerColliderHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void ACombatSituation::OnTriggerColliderHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& Hit)
 {
 	TriggerSituation();
 }
 
 void ACombatSituation::TriggerSituation()
 {
-	
+	if (!bIsActive)
+	{
+		bIsActive = true;
+		GameState->StartDeploymentPhase(this);
+	}
 }

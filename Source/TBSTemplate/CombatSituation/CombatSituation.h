@@ -26,7 +26,7 @@ protected:
 	
 public:
 	UFUNCTION()
-	void OnTriggerColliderHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	void OnTriggerColliderHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& Hit);
 
 
 	UFUNCTION()
@@ -35,7 +35,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Trigger")
 	UBoxComponent* CombatTriggerCollider {nullptr};
 
-	UPROPERTY(EditDefaultsOnly, Category = "Enemies")
+	UPROPERTY(EditInstanceOnly, Category = "Enemies")
 	FName NPCCombatantId;	
 
 	UPROPERTY(EditInstanceOnly, Category = "Grid")
@@ -49,4 +49,6 @@ protected:
 
 	UPROPERTY()
 	ATBSGameState* GameState {nullptr};
+	
+	bool bIsActive {false};
 };
