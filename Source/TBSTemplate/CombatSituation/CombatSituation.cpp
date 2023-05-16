@@ -4,6 +4,7 @@
 #include "CombatSituation/CombatSituation.h"
 #include "Components/BoxComponent.h"
 #include "Game/TBSGameState.h"
+#include "GridSystem/GridActor/GridActor.h"
 
 // Sets default values
 ACombatSituation::ACombatSituation()
@@ -19,15 +20,23 @@ void ACombatSituation::BeginPlay()
 {
 	Super::BeginPlay();
 	check(!NPCCombatantId.IsNone());
-	check(GridActor);
 	CombatTriggerCollider->OnComponentBeginOverlap.AddDynamic(this, &ACombatSituation::OnTriggerColliderHit);
 	GameState = Cast<ATBSGameState>(GetWorld()->GetGameState());
 	check(GameState);
+
+	check(GridActor);
+	GridActor->GenerateGrid(this);
 }
 
 void ACombatSituation::OnTriggerColliderHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& Hit)
 {
 	TriggerSituation();
+}
+
+void ACombatSituation::GetCombatGridBounds(FVector& Center, FVector& Bounds) const
+{
+	Center = CombatTriggerCollider->GetComponentLocation();
+	Bounds = CombatTriggerCollider->GetScaledBoxExtent();
 }
 
 void ACombatSituation::TriggerSituation()
@@ -37,4 +46,10 @@ void ACombatSituation::TriggerSituation()
 		bIsActive = true;
 		GameState->StartDeploymentPhase(this);
 	}
+}
+
+void ACombatSituation::GenerateGridForSituation()
+{
+	check(GridActor);
+	GridActor->GenerateGrid(this);
 }

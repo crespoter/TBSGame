@@ -8,6 +8,7 @@
 #include "GridActor.generated.h"
 
 class ATBSGameState;
+class ACombatSituation;
 
 UCLASS()
 class TBSTEMPLATE_API AGridActor : public AActor
@@ -21,8 +22,8 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	// Generates the grid.
-	UFUNCTION(CallInEditor, BlueprintCallable, Category="Grid Generation")
-	void GenerateGrid();
+	UFUNCTION()
+	void GenerateGrid(ACombatSituation* CombatSituation);
 
 	UFUNCTION(BlueprintCallable)
 	FIntPoint GetIndexFromLocation(const FVector2f& GridLocation) const;
@@ -46,10 +47,10 @@ public:
 	bool IsValidIndex(const FIntPoint &GridIndex) const;
 
 	UFUNCTION(Exec, CallInEditor, Category = "Grid")
-	void DrawDebugGrid() const;
+	void DrawDebugGrid();
 
 	UFUNCTION(Exec, CallInEditor, Category = "Grid")
-	void ClearAllDebugLines() const;
+	void ClearGrid() const;
 
 	/**
 	 * Updates the visual state of a grid unit. Use RenderVisualGrid method to render as per the state
@@ -62,7 +63,7 @@ public:
 
 	
 	UFUNCTION(BlueprintCallable)
-	void RenderVisualGrid();
+	void ActivateDeploymentGrid();
 	
 protected:
 	// Called when the game starts or when spawned
@@ -71,9 +72,9 @@ protected:
 	void SetInstancedMeshGridColors(const uint16 MeshInstanceIndex,
 		const FColor &EdgeColor, const FColor &BackgroundColor);
 
+	void CalculateDimensions();
 
-	void DrawGrid();
-	
+
 public:
 	virtual void PostInitializeComponents() override;
 	
@@ -92,6 +93,9 @@ protected:
 
 	UPROPERTY()
 	FVector2f BottomLeft {0};
+	FVector2f TopRight {0};
+	FVector2D Dimension;
+
 
 	const float RayTraceHeight = 500.0f;
 
@@ -102,5 +106,9 @@ protected:
 	TMap<FIntPoint, FVisibleGridState> VisibleGridStateMap;
 
 	UPROPERTY()
-	bool bIsGridGenerated { false };	
+	bool bIsGridGenerated { false };
+
+	mutable bool bIsDebugGridActive {false};
+
+	
 };

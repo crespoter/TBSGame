@@ -28,9 +28,14 @@ public:
 	UFUNCTION()
 	void OnTriggerColliderHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& Hit);
 
-
+	UFUNCTION()
+	void GetCombatGridBounds(FVector& Center, FVector& Bounds) const;
+	
 	UFUNCTION()
 	void TriggerSituation();
+
+	UFUNCTION(CallInEditor, BlueprintCallable)
+	void GenerateGridForSituation();
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Trigger")
 	UBoxComponent* CombatTriggerCollider {nullptr};

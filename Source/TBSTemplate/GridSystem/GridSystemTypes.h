@@ -43,16 +43,10 @@ public:
 	// Grid unit size after scaling
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FVector2f GridUnitSize {100.0f};
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FVector2f GridBottomLeftWorldLocation {0.0f};
-
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FVector2f GridUnitScale {1.0f};
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FIntPoint GridDimensions {10};
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UStaticMesh* GridUnitMesh { nullptr };
 

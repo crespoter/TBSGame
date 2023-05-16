@@ -4,7 +4,7 @@
 #include "Components/InstancedStaticMeshComponent.h"
 #include "GridSystem/GridSystemTypes.h"
 #include "GridSystem/GridBlockerVolume/GridBlockerVolume.h"
-#include "TBSTemplate/Game/TBSGameState.h"
+#include "CombatSituation/CombatSituation.h"
 
 AGridActor::AGridActor()
 {
@@ -18,6 +18,7 @@ void AGridActor::BeginPlay()
 {
 	Super::BeginPlay();
 	check(bIsGridGenerated);
+	ClearGrid();
 }
 
 void AGridActor::SetInstancedMeshGridColors(const uint16 MeshInstanceIndex, const FColor& EdgeColor,
@@ -42,6 +43,15 @@ void AGridActor::SetInstancedMeshGridColors(const uint16 MeshInstanceIndex, cons
 	}
 }
 
+void AGridActor::CalculateDimensions()
+{
+	FVector2f Bounds;
+	Bounds.X = TopRight.X - BottomLeft.X;
+	Bounds.Y = TopRight.Y - BottomLeft.Y;
+	Dimension.X = FMath::Floor(Bounds.X / GridData->GridUnitSize.X);
+	Dimension.Y = FMath::Floor(Bounds.Y / GridData->GridUnitSize.Y);
+}
+
 void AGridActor::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
@@ -53,8 +63,17 @@ void AGridActor::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AGridActor::GenerateGrid()
+void AGridActor::GenerateGrid(ACombatSituation* CombatSituation)
 {
+	check(CombatSituation);
+	FVector Center;
+	FVector Bounds;
+	CombatSituation->GetCombatGridBounds(Center, Bounds);
+	BottomLeft = FVector2f(Center.X, Center.Y) - FVector2f(Bounds.X, Bounds.Y); 
+	TopRight = FVector2f(Center.X, Center.Y) + FVector2f(Bounds.X, Bounds.Y);
+
+	CalculateDimensions();
+	GridUnitStateMap.Reset();
 	if (UNLIKELY(!GridData))
 	{
 		UE_LOG(LogGridSystems, Error, TEXT("Grid Data asset not available"));
@@ -62,16 +81,14 @@ void AGridActor::GenerateGrid()
 	}
 	if (LIKELY(GridData->GridUnitMesh))
 	{
-		// const FIntPoint BottomLeftIndex =
-		// 	FIntPoint(GridData->GridDimensions.X / 2,  GridData->GridDimensions.Y / 2);
+		// Center the bottom left on the bottom left tile
+		BottomLeft = BottomLeft  + GridData->GridUnitSize / 2.0f;
+		TopRight = TopRight - GridData->GridUnitSize / 2.0f;
 		
-		BottomLeft = GridData->GridBottomLeftWorldLocation  + GridData->GridUnitSize / 2.0f;// FVector2f(BottomLeftIndex.X * -GridData->GridUnitSize.X,
-			//BottomLeftIndex.Y * -GridData->GridUnitSize.Y);
-			
 		FVector2f CurrentPosition = BottomLeft;
-		for (uint16 i = 0; i < GridData->GridDimensions.X; ++i)
+		for (uint16 i = 0; i < Dimension.X; ++i)
 		{
-			for (uint16 j = 0; j < GridData->GridDimensions.Y; ++j)
+			for (uint16 j = 0; j < Dimension.Y; ++j)
 			{
 				// Ray trace from above the tile to find the correct z value.
 				FHitResult HitResult;
@@ -111,6 +128,10 @@ void AGridActor::GenerateGrid()
 		UE_LOG(LogGridSystems, Error, TEXT("Grid Unit Mesh is not set in Grid Actor data"));
 	}
 	bIsGridGenerated = true;
+	if (bIsDebugGridActive)
+	{
+		DrawDebugGrid();
+	}
 }
 
 FIntPoint AGridActor::GetIndexFromLocation(const FVector2f& GridLocation) const
@@ -162,50 +183,20 @@ void AGridActor::UnhoverGridUnit()
 
 bool AGridActor::IsValidIndex(const FIntPoint &GridIndex) const
 {
-	return GridIndex.X >= 0 && GridIndex.X < GridData->GridDimensions.X &&
-		GridIndex.Y >= 0 && GridIndex.Y < GridData->GridDimensions.Y;
+	return GridIndex.X >= 0 && GridIndex.X < Dimension.X &&
+		GridIndex.Y >= 0 && GridIndex.Y < Dimension.Y;
 }
 
-void AGridActor::DrawDebugGrid() const
+void AGridActor::DrawDebugGrid()
 {
-	for (uint16 i = 0; i < GridData->GridDimensions.X; i++)
-	{
-		for (uint16 j = 0; j < GridData->GridDimensions.Y; j++)
-		{
-			if (const FGridState* GridState = GridUnitStateMap.Find(FIntPoint(i, j)))
-			{
-				FColor GridColor;
-				switch(GridState->GridAccessState)
-				{
-				case EGridAccessState::Accessible:
-					GridColor = FColor::Green;
-					break;
-				case EGridAccessState::Blocked:
-					GridColor = FColor::Red;
-					break;
-				case EGridAccessState::OutOfMap:
-					GridColor = FColor::Blue;
-					break;
-				case EGridAccessState::Max:
-					UE_LOG(LogGridSystems, Error, TEXT("Grid index data is not set %d %d"), i, j);
-					GridColor = FColor::Black;
-				}
-				DrawDebugBox(GetWorld(), GetWorldLocationFromIndex(FIntPoint(i, j)),
-					FVector(GridData->GridUnitSize.X / 2.0f, GridData->GridUnitSize.Y / 2.0f, 0.0f),
-					GridColor, true);
-			}
-			else
-			{
-				UE_LOG(LogGridSystems, Error, TEXT("Grid index data not found %d %d"), i, j);
-			}
-
-		}
-	}
+	ActivateDeploymentGrid();
+	bIsDebugGridActive = true;
 }
 
-void AGridActor::ClearAllDebugLines() const
+void AGridActor::ClearGrid() const
 {
-	FlushPersistentDebugLines(GetWorld());
+	InstancedStaticMeshComponent->ClearInstances();
+	bIsDebugGridActive = false;
 }
 
 void AGridActor::UpdateVisualGridState(FIntPoint& Index, const FVisibleGridState& InVisibleGridState)
@@ -218,16 +209,15 @@ void AGridActor::ClearVisualGridState()
 	VisibleGridStateMap.Empty();
 }
 
-void AGridActor::RenderVisualGrid()
+void AGridActor::ActivateDeploymentGrid()
 {
-	// TODO: Update based on render state
-/*
+	// TODO: Data driven colors
 	InstancedStaticMeshComponent->SetStaticMesh(GridData->GridUnitMesh);
 	InstancedStaticMeshComponent->ClearInstances();
 	uint16 MeshInstanceIndex = 0;
-	for (uint16 i = 0; i < GridData->GridDimensions.X; i++)
+	for (uint16 i = 0; i < Dimension.X; i++)
 	{
-		for (uint16 j = 0; j < GridData->GridDimensions.Y; j++)
+		for (uint16 j = 0; j < Dimension.Y; j++)
 		{
 			FTransform MeshTransform;
 			FVector GridUnitLocation = GetWorldLocationFromIndex(FIntPoint(i, j));
@@ -235,14 +225,12 @@ void AGridActor::RenderVisualGrid()
 			MeshTransform.SetLocation(GridUnitLocation);
 			MeshTransform.SetScale3D(FVector(GridData->GridUnitScale.X, GridData->GridUnitScale.Y, 1.0f));
 			InstancedStaticMeshComponent->AddInstance(MeshTransform, true);
-			const FGridColorData GridColorData = GetColorDataForState(static_cast<uint8>(EGridUnitState::Default));
+			FGridColorData GridColorData = FGridColorData(); //GetColorDataForState(static_cast<uint8>(EGridUnitState::Default));
+			GridColorData.EdgeColor = FColor(0, 0, 255, 255);
+			GridColorData.BackgroundColor = FColor(0, 0, 0, 0);
 			SetInstancedMeshGridColors(MeshInstanceIndex - 1, GridColorData.EdgeColor, GridColorData.BackgroundColor);
 			MeshInstanceIndex++;
+			// GridState.MeshInstanceIndex = MeshInstanceIndex++;
 		}
 	}
-	
-	*/
-	// GridState.MeshInstanceIndex = MeshInstanceIndex++;
-	// const FGridColorData GridColorData = GetColorDataForState(static_cast<uint8>(EGridUnitState::Default));
-	// SetInstancedMeshGridColors(MeshInstanceIndex - 1, GridColorData.EdgeColor, GridColorData.BackgroundColor);
 }
