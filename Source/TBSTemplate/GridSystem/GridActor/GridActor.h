@@ -97,7 +97,7 @@ protected:
 	FVector2D Dimension;
 
 
-	const float RayTraceHeight = 500.0f;
+	const float RayTraceHeight = 1000.0f;
 
 	UPROPERTY()
 	TMap<FIntPoint, FGridState> GridUnitStateMap;
