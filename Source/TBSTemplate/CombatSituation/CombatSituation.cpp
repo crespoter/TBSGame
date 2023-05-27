@@ -10,9 +10,6 @@
 ACombatSituation::ACombatSituation()
 {
 	PrimaryActorTick.bCanEverTick = false;
-	CombatTriggerCollider = CreateDefaultSubobject<UBoxComponent>("Box component");
-	CombatTriggerCollider->SetupAttachment(RootComponent);
-	check(CombatTriggerCollider);
 }
 
 // Called when the game starts or when spawned
@@ -20,36 +17,18 @@ void ACombatSituation::BeginPlay()
 {
 	Super::BeginPlay();
 	check(!NPCCombatantId.IsNone());
-	CombatTriggerCollider->OnComponentBeginOverlap.AddDynamic(this, &ACombatSituation::OnTriggerColliderHit);
 	GameState = Cast<ATBSGameState>(GetWorld()->GetGameState());
 	check(GameState);
-
-	check(GridActor);
-	GridActor->GenerateGrid(this);
 }
 
-void ACombatSituation::OnTriggerColliderHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& Hit)
-{
-	TriggerSituation();
-}
-
-void ACombatSituation::GetCombatGridBounds(FVector& Center, FVector& Bounds) const
-{
-	Center = CombatTriggerCollider->GetComponentLocation();
-	Bounds = CombatTriggerCollider->GetScaledBoxExtent();
-}
-
-void ACombatSituation::TriggerSituation()
+void ACombatSituation::StartCombatSituation(const ADeploymentZone* DeploymentZone)
 {
 	if (!bIsActive)
 	{
 		bIsActive = true;
 		GameState->StartDeploymentPhase(this);
-	}
-}
 
-void ACombatSituation::GenerateGridForSituation()
-{
-	check(GridActor);
-	GridActor->GenerateGrid(this);
+		// TODO: Debug; remove
+		GameState->GetGridActor()->DrawDebugGrid();
+	}
 }

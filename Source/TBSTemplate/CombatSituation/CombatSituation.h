@@ -10,6 +10,7 @@ class UBoxComponent;
 class AGridActor;
 class AHeroCharacter;
 class ATBSGameState;
+class ADeploymentZone;
 
 UCLASS()
 class TBSTEMPLATE_API ACombatSituation : public AActor
@@ -26,28 +27,13 @@ protected:
 	
 public:
 	UFUNCTION()
-	void OnTriggerColliderHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& Hit);
-
-	UFUNCTION()
-	void GetCombatGridBounds(FVector& Center, FVector& Bounds) const;
+	void StartCombatSituation(const ADeploymentZone* DeploymentZone);
 	
-	UFUNCTION()
-	void TriggerSituation();
-
-	UFUNCTION(CallInEditor, BlueprintCallable)
-	void GenerateGridForSituation();
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Trigger")
-	UBoxComponent* CombatTriggerCollider {nullptr};
-
 	UPROPERTY(EditInstanceOnly, Category = "Enemies")
 	FName NPCCombatantId;	
 
-	UPROPERTY(EditInstanceOnly, Category = "Grid")
-	AGridActor* GridActor {nullptr};
-
 protected:
-	// TODO: Change to TBSCharacter
+	// TODO: Change to TBSCharacter, auto populate based on tags
 	// Participants in the order of their speed
 	UPROPERTY()
     TArray<AHeroCharacter*> ActiveParticipants;

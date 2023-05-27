@@ -40,7 +40,15 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE EGamePhase GetCurrentGamePhase() const;
+
 	FORCEINLINE UBattleStateComponent* GetBattleStateComponent() const;
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE AGridActor* GetGridActor() const
+	{
+		return GridActor;
+	}
+
 	// Properties
 	
 	UPROPERTY(BlueprintAssignable)
@@ -54,4 +62,7 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly)
 	UBattleStateComponent* BattleStateComponent { nullptr };
+
+	UPROPERTY()
+	AGridActor* GridActor {nullptr}; 
 };

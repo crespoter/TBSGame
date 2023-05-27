@@ -3,8 +3,9 @@
 
 #include "TBSGameState.h"
 
-#include "Kismet/GameplayStatics.h"
+#include "EngineUtils.h"
 #include "TBSTemplate/Game/BattleStateComponent.h"
+#include "TBSTemplate/GridSystem/GridActor/GridActor.h"
 
 ATBSGameState::ATBSGameState()
 {
@@ -30,4 +31,6 @@ UBattleStateComponent* ATBSGameState::GetBattleStateComponent() const
 void ATBSGameState::BeginPlay()
 {
 	Super::BeginPlay();
+	GridActor = *TActorIterator<AGridActor>(GetWorld());
+	check(GridActor);
 }

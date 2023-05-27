@@ -8,7 +8,7 @@
 #include "GridActor.generated.h"
 
 class ATBSGameState;
-class ACombatSituation;
+class UBoxComponent;
 
 UCLASS()
 class TBSTEMPLATE_API AGridActor : public AActor
@@ -22,8 +22,8 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	// Generates the grid.
-	UFUNCTION()
-	void GenerateGrid(ACombatSituation* CombatSituation);
+	UFUNCTION(CallInEditor)
+	void GenerateGrid();
 
 	UFUNCTION(BlueprintCallable)
 	FIntPoint GetIndexFromLocation(const FVector2f& GridLocation) const;
@@ -88,8 +88,12 @@ public:
 	FIntPoint HoveringIndex {-1};
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UInstancedStaticMeshComponent* InstancedStaticMeshComponent {nullptr};
+
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Grid Generation")
+	UBoxComponent* GridArea {nullptr};
 
 	UPROPERTY()
 	FVector2f BottomLeft {0};

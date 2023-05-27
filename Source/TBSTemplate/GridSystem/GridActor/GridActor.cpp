@@ -4,14 +4,23 @@
 #include "Components/InstancedStaticMeshComponent.h"
 #include "GridSystem/GridSystemTypes.h"
 #include "GridSystem/GridBlockerVolume/GridBlockerVolume.h"
-#include "CombatSituation/CombatSituation.h"
+#include "Components/BoxComponent.h"
 
 AGridActor::AGridActor()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	RootComponent = CreateDefaultSubobject<USceneComponent>("Root Node");
+	check(RootComponent);
+		
+	GridArea = CreateDefaultSubobject<UBoxComponent>("Box component");
+	GridArea->SetupAttachment(RootComponent);
+	check(GridArea);
+
 	InstancedStaticMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>(FName("Instanced Meshes"));
+	InstancedStaticMeshComponent->SetupAttachment(RootComponent);
 	check(InstancedStaticMeshComponent);
-	RootComponent = InstancedStaticMeshComponent;
+	
+
 }
 
 void AGridActor::BeginPlay()
@@ -20,6 +29,7 @@ void AGridActor::BeginPlay()
 	check(bIsGridGenerated);
 	InstancedStaticMeshComponent->SetStaticMesh(GridData->GridUnitMesh);
 	ClearGrid();
+	GenerateGrid();
 }
 
 void AGridActor::SetInstancedMeshGridColors(const uint16 MeshInstanceIndex, const FColor& EdgeColor,
@@ -64,12 +74,11 @@ void AGridActor::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AGridActor::GenerateGrid(ACombatSituation* CombatSituation)
+void AGridActor::GenerateGrid()
 {
-	check(CombatSituation);
-	FVector Center;
-	FVector Bounds;
-	CombatSituation->GetCombatGridBounds(Center, Bounds);
+	check(GridArea);
+	FVector Center = GetActorLocation();
+	FVector Bounds = GridArea->GetScaledBoxExtent();
 	BottomLeft = FVector2f(Center.X, Center.Y) - FVector2f(Bounds.X, Bounds.Y); 
 	TopRight = FVector2f(Center.X, Center.Y) + FVector2f(Bounds.X, Bounds.Y);
 
@@ -235,6 +244,7 @@ void AGridActor::DrawDebugGrid()
 						GridColorData.EdgeColor = FColor(0, 0 ,0, 255);
 						break;
 					}
+				default: ;
 				}
 			}
 			SetInstancedMeshGridColors(MeshInstanceIndex, GridColorData.EdgeColor, GridColorData.BackgroundColor);
@@ -265,26 +275,6 @@ void AGridActor::ClearVisualGridState()
 
 void AGridActor::ActivateDeploymentGrid()
 {
-	// TODO: Data driven colors
-	InstancedStaticMeshComponent->ClearInstances();
-	uint16 MeshInstanceIndex = 0;
-	for (uint16 i = 0; i < Dimension.X; i++)
-	{
-		for (uint16 j = 0; j < Dimension.Y; j++)
-		{
-			FTransform MeshTransform;
-			FVector GridUnitLocation = GetWorldLocationFromIndex(FIntPoint(i, j));
-			GridUnitLocation.Z += 10.0f;
-			MeshTransform.SetLocation(GridUnitLocation);
-			MeshTransform.SetScale3D(FVector(GridData->GridUnitScale.X, GridData->GridUnitScale.Y, 1.0f));
-			InstancedStaticMeshComponent->AddInstance(MeshTransform, true);
-			FGridColorData GridColorData = FGridColorData(); //GetColorDataForState(static_cast<uint8>(EGridUnitState::Default));
-			GridColorData.EdgeColor = FColor(0, 0, 255, 255);
-			GridColorData.BackgroundColor = FColor(0, 0, 0, 0);
-			SetInstancedMeshGridColors(MeshInstanceIndex - 1, GridColorData.EdgeColor, GridColorData.BackgroundColor);
-			MeshInstanceIndex++;
-			// GridState.MeshInstanceIndex = MeshInstanceIndex++;
-		}
-		
-	}
+	// TODO: Draw deployment grid
+	DrawDebugGrid();
 }
