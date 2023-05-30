@@ -18,6 +18,8 @@ public:
 
 	void GetDeploymentBounds(FVector2f& OutBottomLeft, FVector2f& OutTopRight) const;
 
+	UFUNCTION(CallInEditor)
+	void DrawDebugDeploymentZone();
 protected:
 	UPROPERTY(EditInstanceOnly)
 	UBoxComponent* DeploymentArea {nullptr};

@@ -106,7 +106,7 @@ void AGridActor::GenerateGrid()
 				
 				GetWorld()->LineTraceSingleByChannel(HitResult, FVector(CurrentPosition.X, CurrentPosition.Y, RayTraceHeight),
 					FVector(CurrentPosition.X, CurrentPosition.Y, -RayTraceHeight), GridData->GridPlacementTraceChannel);
-				
+
 				FGridState GridState;
 
 				if (HitResult.bBlockingHit)
@@ -115,7 +115,7 @@ void AGridActor::GenerateGrid()
 					{
 
 						GridState.GridAccessState = EGridAccessState::Accessible;
-						GridState.Height = HitResult.Location.Z;
+						GridState.Height = HitResult.ImpactPoint.Z;
 					}
 					else
 					{
@@ -212,13 +212,18 @@ void AGridActor::DrawDebugGrid()
 		{
 			FTransform MeshTransform;
 			FVector GridUnitLocation = GetWorldLocationFromIndex(FIntPoint(i, j));
-			GridUnitLocation.Z += 10.0f;
+			const FGridState* GridState = GridUnitStateMap.Find(FIntPoint(i, j));
+
+			if (GridState->GridAccessState != EGridAccessState::Accessible)
+			{
+				GridUnitLocation.Z += 10.0f;
+			}
+			GridUnitLocation.Z += 5.0f;
 			MeshTransform.SetLocation(GridUnitLocation);
 			MeshTransform.SetScale3D(FVector(GridData->GridUnitScale.X, GridData->GridUnitScale.Y, 1.0f));
 			InstancedStaticMeshComponent->AddInstance(MeshTransform, true);
 
 			FGridColorData GridColorData;
-			const FGridState* GridState = GridUnitStateMap.Find(FIntPoint(i, j));
 			GridColorData.BackgroundColor = FColor(0, 0, 0, 0);
 			if (!GridState)
 			{
@@ -248,8 +253,8 @@ void AGridActor::DrawDebugGrid()
 				}
 			}
 			SetInstancedMeshGridColors(MeshInstanceIndex, GridColorData.EdgeColor, GridColorData.BackgroundColor);
+			GridIndexToMapIndexMap.Add(FIntPoint(i, j), MeshInstanceIndex);
 			MeshInstanceIndex++;
-			// GridState.MeshInstanceIndex = MeshInstanceIndex++;
 		}
 	}
 
@@ -257,10 +262,31 @@ void AGridActor::DrawDebugGrid()
 	bIsDebugGridActive = true;
 }
 
-void AGridActor::ClearGrid() const
+void AGridActor::ClearGrid()
 {
 	InstancedStaticMeshComponent->ClearInstances();
+	GridIndexToMapIndexMap.Reset();
 	bIsDebugGridActive = false;
+}
+
+void AGridActor::DrawDebugDeploymentZone(FIntPoint BottomLeftIdx, FIntPoint TopRightIdx)
+{
+	ClearGrid();
+	DrawDebugGrid();
+	FGridColorData DeploymentColorData;
+	DeploymentColorData.BackgroundColor = FColor(0, 0, 0, 0);
+	DeploymentColorData.EdgeColor = FColor(0, 0, 255, 255);
+	for (SIZE_T i = BottomLeftIdx.X; i <= TopRightIdx.X; i++)
+	{	
+		for (SIZE_T j = BottomLeftIdx.Y; j <= TopRightIdx.Y; j++)
+		{
+			const uint16* IndexRef = GridIndexToMapIndexMap.Find(FIntPoint(i, j));
+			if (IndexRef != nullptr)
+			{
+				SetInstancedMeshGridColors(*IndexRef, DeploymentColorData.EdgeColor, DeploymentColorData.BackgroundColor);
+			}
+		}
+	}
 }
 
 void AGridActor::UpdateVisualGridState(FIntPoint& Index, const FVisibleGridState& InVisibleGridState)

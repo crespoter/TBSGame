@@ -50,7 +50,10 @@ public:
 	void DrawDebugGrid();
 
 	UFUNCTION(Exec, CallInEditor, Category = "Grid")
-	void ClearGrid() const;
+	void ClearGrid();
+
+	UFUNCTION()
+	void DrawDebugDeploymentZone(FIntPoint BottomLeftIdx, FIntPoint TopRightIdx);
 
 	/**
 	 * Updates the visual state of a grid unit. Use RenderVisualGrid method to render as per the state
@@ -114,5 +117,6 @@ protected:
 
 	mutable bool bIsDebugGridActive {false};
 
-	
+	UPROPERTY()
+	TMap<FIntPoint, uint16> GridIndexToMapIndexMap;
 };

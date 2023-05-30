@@ -2,7 +2,8 @@
 
 
 #include "CombatSituation/CombatSituation.h"
-#include "Components/BoxComponent.h"
+#include "EngineUtils.h"
+#include "DeploymentZone/DeploymentZone.h"
 #include "Game/TBSGameState.h"
 #include "GridSystem/GridActor/GridActor.h"
 

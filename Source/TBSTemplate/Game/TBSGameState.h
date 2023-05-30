@@ -43,6 +43,8 @@ public:
 
 	FORCEINLINE UBattleStateComponent* GetBattleStateComponent() const;
 
+	FORCEINLINE AHeroCharacter* GetMainCharacter() const;
+	
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE AGridActor* GetGridActor() const
 	{
@@ -64,5 +66,8 @@ protected:
 	UBattleStateComponent* BattleStateComponent { nullptr };
 
 	UPROPERTY()
-	AGridActor* GridActor {nullptr}; 
+	AGridActor* GridActor {nullptr};
+
+	UPROPERTY()
+	AHeroCharacter* MainCharacter {nullptr};
 };

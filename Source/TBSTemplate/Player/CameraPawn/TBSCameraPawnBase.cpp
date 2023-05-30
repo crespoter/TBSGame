@@ -3,9 +3,6 @@
 #include "Player/CameraPawn/TBSCameraPawnBase.h"
 
 #include "AIController.h"
-#include "EngineUtils.h"
-#include "NavigationPath.h"
-#include "NavigationSystem.h"
 #include "Game/TBSGameState.h"
 #include "Player/PlayerController/TBSPlayerController.h"
 #include "Camera/CameraComponent.h"
@@ -13,7 +10,6 @@
 #include "EnhancedInput/Public/InputMappingContext.h"
 #include "EnhancedInput/Public/EnhancedInputSubsystems.h"
 #include "EnhancedInput/Public/EnhancedInputComponent.h"
-#include "GameFramework/PawnMovementComponent.h"
 #include "GridSystem/GridActor/GridActor.h"
 #include "Player/HeroCharacter/HeroCharacter.h"
 
@@ -109,7 +105,8 @@ void ATBSCameraPawnBase::HandleExecuteInputEvent(const FInputActionValue& Action
 				NavPath = NavSys->FindPathToLocationSynchronously(GetWorld(), StartLocation, TargetLocation);
 				TArray<FVector> Waypoints = NavPath->PathPoints;
 			}*/
-			const AHeroCharacter* Hero = *(TActorIterator<AHeroCharacter>(GetWorld()));
+			// TODO: Get Hero character from game state
+			const AHeroCharacter* Hero = CachedGameState->GetMainCharacter();
 			AAIController* AIController = Cast<AAIController>(Hero->GetController());
 			AIController->MoveToLocation(HitResult.Location);
 		}
@@ -126,7 +123,6 @@ void ATBSCameraPawnBase::HandleHover()
 		{
 			if (AGridActor* GridActor = Cast<AGridActor>(HitResult.GetActor()))
 			{
-
 				GridActor->SetGridUnitAsHovering(GridActor->GetIndexFromLocation(FVector2f(HitResult.Location.X,
 					HitResult.Location.Y)));
 			}

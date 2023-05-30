@@ -30,7 +30,7 @@ public:
 
 	UFUNCTION()
 	void OnCombatTriggerHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& Hit);
-
+	
 protected:
 	virtual void BeginPlay() override;
 };

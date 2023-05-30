@@ -12,6 +12,7 @@ class AHeroCharacter;
 class ATBSGameState;
 class ADeploymentZone;
 
+
 UCLASS()
 class TBSTEMPLATE_API ACombatSituation : public AActor
 {

@@ -1,5 +1,4 @@
 ﻿#pragma once
-#include "Engine/DataTable.h"
 #include "GridSystemTypes.Generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogGridSystems, Log, All);
