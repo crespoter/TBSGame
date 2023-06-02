@@ -12,12 +12,10 @@ enum class EGridAccessState : uint8
 	Max
 };
 
-
-UENUM(BlueprintType)
-enum class EGridUnitState : uint8
+UENUM()
+enum class EGridInstanceType
 {
-	Default,
-	Hover
+	Deployment
 };
 
 
@@ -33,6 +31,15 @@ struct FGridColorData
 	FColor BackgroundColor;
 };
 
+USTRUCT(BlueprintType)
+struct FGridVisualState
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly)
+	FGridColorData GridColorData;
+	
+};
 
 UCLASS(BlueprintType)
 class TBSTEMPLATE_API UGridGenerationData : public UDataAsset
@@ -62,17 +69,4 @@ struct TBSTEMPLATE_API FGridState
 	GENERATED_BODY()
 	EGridAccessState GridAccessState {EGridAccessState::Max};
 	float Height {0.0f};
-};
-
-/*
- * Grid state for the sub grid that is rendered on each turn for a hero. This is the state for the rendered grid
- */
-USTRUCT(BlueprintType)
-struct TBSTEMPLATE_API FVisibleGridState
-{
-	GENERATED_BODY()
-	uint16 MeshInstanceIndex {0};
-	FColor DefaultColor;
-	FColor HoverColor;
-	FColor ActiveColor;
 };

@@ -9,6 +9,8 @@
 
 class ATBSGameState;
 class UBoxComponent;
+class ACombatSituation;
+
 
 UCLASS()
 class TBSTEMPLATE_API AGridActor : public AActor
@@ -30,19 +32,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	FVector GetWorldLocationFromIndex(const FIntPoint& Idx) const;
-
-	UFUNCTION(BlueprintCallable)
-	void SetGridUnitAsSelected(const FIntPoint &GridIndex);
-
-	UFUNCTION(BlueprintCallable)
-	void SetGridUnitAsHovering(const FIntPoint &GridIndex);
 	
-	UFUNCTION(BlueprintCallable)
-	void DeselectGrid();
-
-	UFUNCTION(BlueprintCallable)
-	void UnhoverGridUnit();
-
 	UFUNCTION(BlueprintCallable)
 	bool IsValidIndex(const FIntPoint &GridIndex) const;
 
@@ -51,22 +41,12 @@ public:
 
 	UFUNCTION(Exec, CallInEditor, Category = "Grid")
 	void ClearGrid();
-
+	
 	UFUNCTION()
 	void DrawDebugDeploymentZone(FIntPoint BottomLeftIdx, FIntPoint TopRightIdx);
-
-	/**
-	 * Updates the visual state of a grid unit. Use RenderVisualGrid method to render as per the state
-	*/
-	UFUNCTION(BlueprintCallable)
-	void UpdateVisualGridState(FIntPoint& Index, const FVisibleGridState& InVisibleGridState);
-
-	UFUNCTION(BlueprintCallable)
-	void ClearVisualGridState();
-
 	
 	UFUNCTION(BlueprintCallable)
-	void ActivateDeploymentGrid();
+	void ActivateDeploymentGrid(const ACombatSituation* CurrentCombatSituation);
 	
 protected:
 	// Called when the game starts or when spawned
@@ -77,6 +57,7 @@ protected:
 
 	void CalculateDimensions();
 
+	void DrawGridInstance(const FIntPoint& GridIndex, EGridInstanceType InstanceType);
 
 public:
 	virtual void PostInitializeComponents() override;
@@ -89,6 +70,9 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 	FIntPoint HoveringIndex {-1};
+
+	UPROPERTY(EditDefaultsOnly)
+	TMap<EGridInstanceType, FGridVisualState> GridStyleMap;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -108,14 +92,13 @@ protected:
 
 	UPROPERTY()
 	TMap<FIntPoint, FGridState> GridUnitStateMap;
-
-	UPROPERTY()
-	TMap<FIntPoint, FVisibleGridState> VisibleGridStateMap;
-
+	
 	UPROPERTY()
 	bool bIsGridGenerated { false };
 
 	mutable bool bIsDebugGridActive {false};
+	
+	uint16 CurrentMaxInstancedMeshIndex {0};
 
 	UPROPERTY()
 	TMap<FIntPoint, uint16> GridIndexToMapIndexMap;

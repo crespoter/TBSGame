@@ -17,14 +17,11 @@ ATBSGameState::ATBSGameState()
 void ATBSGameState::StartDeploymentPhase(ACombatSituation* CombatSituation)
 {
 	CurrentPhase = EGamePhase::Deployment;
-	switch(CurrentPhase)
-	{
-	case EGamePhase::Deployment:
-		{
-			// TODO: Remove party members and main character from map
-			break;
-		}
-	}
+	CurrentActiveCombatSituation = CombatSituation;
+	// TODO: Remove party members and main character from map
+	MainCharacter->Destroy();
+	GridActor->ActivateDeploymentGrid(CombatSituation);
+	
 	GamePhaseChangedEvent.Broadcast(CurrentPhase);
 }
 

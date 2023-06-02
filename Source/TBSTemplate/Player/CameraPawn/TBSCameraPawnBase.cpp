@@ -78,8 +78,8 @@ void ATBSCameraPawnBase::HandleSelectInputEvent(const FInputActionValue& ActionV
 		{
 			if (AGridActor* GridActor = Cast<AGridActor>(HitResult.GetActor()))
 			{
-				GridActor->SetGridUnitAsSelected(GridActor->GetIndexFromLocation(FVector2f(HitResult.Location.X,
-					HitResult.Location.Y)));
+				// GridActor->SetGridUnitAsSelected(GridActor->GetIndexFromLocation(FVector2f(HitResult.Location.X,
+				// 	HitResult.Location.Y)));
 			}
 		}
 	}
@@ -123,8 +123,8 @@ void ATBSCameraPawnBase::HandleHover()
 		{
 			if (AGridActor* GridActor = Cast<AGridActor>(HitResult.GetActor()))
 			{
-				GridActor->SetGridUnitAsHovering(GridActor->GetIndexFromLocation(FVector2f(HitResult.Location.X,
-					HitResult.Location.Y)));
+				//GridActor->SetGridUnitAsHovering(GridActor->GetIndexFromLocation(FVector2f(HitResult.Location.X,
+				//	HitResult.Location.Y)));
 			}
 		}
 	}

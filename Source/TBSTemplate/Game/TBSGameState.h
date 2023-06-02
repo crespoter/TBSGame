@@ -70,4 +70,7 @@ protected:
 
 	UPROPERTY()
 	AHeroCharacter* MainCharacter {nullptr};
+	
+	UPROPERTY()
+	ACombatSituation* CurrentActiveCombatSituation {nullptr};
 };

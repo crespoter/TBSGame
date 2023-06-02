@@ -26,10 +26,4 @@ protected:
 protected:
 	UPROPERTY()
 	ATBSGameState* GameState { nullptr };
-
-	UPROPERTY()
-	AHeroCharacter* HeroCharacter {nullptr};
-
-	UPROPERTY()
-	ATBSCameraPawnBase* BattleCameraPawn {nullptr};
 };

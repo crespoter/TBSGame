@@ -28,11 +28,14 @@ protected:
 	
 public:
 	UFUNCTION()
-	void StartCombatSituation(const ADeploymentZone* DeploymentZone);
+	void StartCombatSituation(ADeploymentZone* DeploymentZone);
+
+	UFUNCTION()
+	FORCEINLINE ADeploymentZone* GetDeploymentZone() const; 
 	
 	UPROPERTY(EditInstanceOnly, Category = "Enemies")
-	FName NPCCombatantId;	
-
+	FName NPCCombatantId;
+	
 protected:
 	// TODO: Change to TBSCharacter, auto populate based on tags
 	// Participants in the order of their speed
@@ -41,6 +44,9 @@ protected:
 
 	UPROPERTY()
 	ATBSGameState* GameState {nullptr};
+
+	UPROPERTY()
+	ADeploymentZone* DeploymentZone {nullptr};
 	
 	bool bIsActive {false};
 };

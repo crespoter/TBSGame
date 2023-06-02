@@ -17,6 +17,6 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	FName CharacterID {""};
 	
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AHeroCharacter> CharacterClass;
+	// UPROPERTY(EditDefaultsOnly)
+	// TSubclassOf<AHeroCharacter> CharacterClass;
 };

@@ -2,10 +2,8 @@
 
 
 #include "CombatSituation/CombatSituation.h"
-#include "EngineUtils.h"
 #include "DeploymentZone/DeploymentZone.h"
 #include "Game/TBSGameState.h"
-#include "GridSystem/GridActor/GridActor.h"
 
 // Sets default values
 ACombatSituation::ACombatSituation()
@@ -22,14 +20,17 @@ void ACombatSituation::BeginPlay()
 	check(GameState);
 }
 
-void ACombatSituation::StartCombatSituation(const ADeploymentZone* DeploymentZone)
+void ACombatSituation::StartCombatSituation(ADeploymentZone* InDeploymentZone)
 {
+	DeploymentZone = InDeploymentZone;
 	if (!bIsActive)
 	{
 		bIsActive = true;
 		GameState->StartDeploymentPhase(this);
-
-		// TODO: Debug; remove
-		GameState->GetGridActor()->DrawDebugGrid();
 	}
+}
+
+ADeploymentZone* ACombatSituation::GetDeploymentZone() const
+{
+	return DeploymentZone;
 }
