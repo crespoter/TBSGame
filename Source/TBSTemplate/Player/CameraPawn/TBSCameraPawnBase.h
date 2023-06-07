@@ -14,6 +14,7 @@ class UCameraComponent;
 class USpringArmComponent;
 class ATBSPlayerController;
 class ATBSGameState;
+class AGridActor;
 enum class EGamePhase : uint8;
 
 USTRUCT(BlueprintType)
@@ -114,4 +115,7 @@ protected:
 	ATBSGameState* CachedGameState {nullptr};
 
 	EGamePhase CurrentGamePhase {EGamePhase::Exploration};
+
+	UPROPERTY()
+	AGridActor* GridActor {nullptr};
 };

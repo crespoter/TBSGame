@@ -37,6 +37,7 @@ ATBSCameraPawnBase::ATBSCameraPawnBase()
 void ATBSCameraPawnBase::BeginPlay()
 {
 	Super::BeginPlay();
+
 	TargetActorLocation = GetActorLocation();
 	TargetArmDistance = SpringArmComponent->TargetArmLength;
 
@@ -47,6 +48,11 @@ void ATBSCameraPawnBase::BeginPlay()
 	check(CachedGameState);
 
 	CachedGameState->GamePhaseChangedEvent.AddDynamic(this, &ATBSCameraPawnBase::HandleGamePhaseChanged);
+
+	GridActor = CachedGameState->GetGridActor();
+
+	check(GridActor);
+	
 }
 
 void ATBSCameraPawnBase::HandleCameraMovementInputEvent(const FInputActionValue& ActionValue)
@@ -76,11 +82,7 @@ void ATBSCameraPawnBase::HandleSelectInputEvent(const FInputActionValue& ActionV
 		CachedPlayerController->GetHitResultUnderCursor(GridChannel, true, HitResult);
 		if (HitResult.bBlockingHit)
 		{
-			if (AGridActor* GridActor = Cast<AGridActor>(HitResult.GetActor()))
-			{
-				// GridActor->SetGridUnitAsSelected(GridActor->GetIndexFromLocation(FVector2f(HitResult.Location.X,
-				// 	HitResult.Location.Y)));
-			}
+			// TODO:
 		}
 	}
 }
@@ -121,10 +123,11 @@ void ATBSCameraPawnBase::HandleHover()
 		CachedPlayerController->GetHitResultUnderCursor(GridChannel, true, HitResult);
 		if (HitResult.bBlockingHit)
 		{
-			if (AGridActor* GridActor = Cast<AGridActor>(HitResult.GetActor()))
+			const FVector2f HitLocation2D(HitResult.Location.X, HitResult.Location.Y);
+			const FIntPoint GridIndex = GridActor->GetIndexFromLocation(HitLocation2D);
+			if (GridActor->IsValidIndex(GridIndex))
 			{
-				//GridActor->SetGridUnitAsHovering(GridActor->GetIndexFromLocation(FVector2f(HitResult.Location.X,
-				//	HitResult.Location.Y)));
+				GridActor->HandleHoverOnGrid(GridIndex);
 			}
 		}
 	}

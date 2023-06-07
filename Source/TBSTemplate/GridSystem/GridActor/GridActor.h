@@ -10,7 +10,7 @@
 class ATBSGameState;
 class UBoxComponent;
 class ACombatSituation;
-
+class UDataTable;
 
 UCLASS()
 class TBSTEMPLATE_API AGridActor : public AActor
@@ -32,7 +32,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	FVector GetWorldLocationFromIndex(const FIntPoint& Idx) const;
-	
+
+	/**
+	 * @brief Checks if given index is valid for the grid actor. Returns false
+	 * for out of bounds and blocked indexes
+	 * @param GridIndex Grid index to be checked
+	 */
 	UFUNCTION(BlueprintCallable)
 	bool IsValidIndex(const FIntPoint &GridIndex) const;
 
@@ -40,13 +45,16 @@ public:
 	void DrawDebugGrid();
 
 	UFUNCTION(Exec, CallInEditor, Category = "Grid")
-	void ClearGrid();
+	void ClearGridUnits();
 	
 	UFUNCTION()
 	void DrawDebugDeploymentZone(FIntPoint BottomLeftIdx, FIntPoint TopRightIdx);
 	
 	UFUNCTION(BlueprintCallable)
 	void ActivateDeploymentGrid(const ACombatSituation* CurrentCombatSituation);
+
+	UFUNCTION(BlueprintCallable)
+	void HandleHoverOnGrid(const FIntPoint& GridIndex);
 	
 protected:
 	// Called when the game starts or when spawned
@@ -57,8 +65,10 @@ protected:
 
 	void CalculateDimensions();
 
-	void DrawGridInstance(const FIntPoint& GridIndex, EGridInstanceType InstanceType);
+	void DrawGridInstance(const FIntPoint& GridIndex, EGridInstanceType InstanceType, EGridInstanceActivityType ActivityType);
 
+	void LoadVisualData();
+	
 public:
 	virtual void PostInitializeComponents() override;
 	
@@ -72,7 +82,10 @@ public:
 	FIntPoint HoveringIndex {-1};
 
 	UPROPERTY(EditDefaultsOnly)
-	TMap<EGridInstanceType, FGridVisualState> GridStyleMap;
+	UDataTable* GridVisualDataTable {nullptr};
+
+	TMap<EGridInstanceType,
+		TMap<EGridInstanceActivityType, FGridVisualState>> GridStyleMap;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -91,8 +104,11 @@ protected:
 	const float RayTraceHeight = 1000.0f;
 
 	UPROPERTY()
-	TMap<FIntPoint, FGridState> GridUnitStateMap;
-	
+	TMap<FIntPoint, FGridState> GridStateMap;
+
+	UPROPERTY()
+	TMap<FIntPoint, FGridInstanceState> GridInstanceMap;
+
 	UPROPERTY()
 	bool bIsGridGenerated { false };
 
@@ -100,6 +116,5 @@ protected:
 	
 	uint16 CurrentMaxInstancedMeshIndex {0};
 
-	UPROPERTY()
-	TMap<FIntPoint, uint16> GridIndexToMapIndexMap;
+	FIntPoint HoveringGridIndex {-1};
 };

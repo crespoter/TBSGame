@@ -15,7 +15,17 @@ enum class EGridAccessState : uint8
 UENUM()
 enum class EGridInstanceType
 {
-	Deployment
+	Deployment,
+	DebugGrid,
+	Max
+};
+
+UENUM()
+enum class EGridInstanceActivityType
+{
+	None,
+	Hover,
+	Active
 };
 
 
@@ -63,10 +73,22 @@ public:
 /**
  * Grid state for the whole map. Static details are stored here like grid height and static state.
  */
-USTRUCT(BlueprintType)
+USTRUCT()
 struct TBSTEMPLATE_API FGridState
 {
 	GENERATED_BODY()
 	EGridAccessState GridAccessState {EGridAccessState::Max};
 	float Height {0.0f};
+};
+
+/**
+ *	Grid state for each instance that is actually spawned.
+*/
+USTRUCT()
+struct TBSTEMPLATE_API FGridInstanceState
+{
+	GENERATED_BODY()
+	EGridInstanceType InstanceType {EGridInstanceType::Max};
+	EGridInstanceActivityType ActivityType {EGridInstanceActivityType::None};
+	uint16 MeshInstanceIndex {0};
 };

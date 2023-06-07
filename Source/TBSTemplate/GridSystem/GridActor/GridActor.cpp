@@ -7,6 +7,7 @@
 #include "Components/BoxComponent.h"
 #include "CombatSituation/CombatSituation.h"
 #include "CombatSituation/DeploymentZone/DeploymentZone.h"
+#include "Data/GridVisualData/GridVisualData.h"
 
 AGridActor::AGridActor()
 {
@@ -28,8 +29,9 @@ void AGridActor::BeginPlay()
 	Super::BeginPlay();
 	check(bIsGridGenerated);
 	InstancedStaticMeshComponent->SetStaticMesh(GridData->GridUnitMesh);
-	ClearGrid();
+	ClearGridUnits();
 	GenerateGrid();
+	LoadVisualData();
 }
 
 void AGridActor::SetInstancedMeshGridColors(const uint16 MeshInstanceIndex, const FColor& EdgeColor,
@@ -63,26 +65,60 @@ void AGridActor::CalculateDimensions()
 	Dimension.Y = FMath::Floor(Bounds.Y / GridData->GridUnitSize.Y);
 }
 
-void AGridActor::DrawGridInstance(const FIntPoint& GridIndex, EGridInstanceType InstanceType)
+void AGridActor::DrawGridInstance(const FIntPoint& GridIndex, EGridInstanceType InstanceType, EGridInstanceActivityType ActivityType)
 {
-	check(GridIndexToMapIndexMap.Find(GridIndex) == nullptr);
-	FGridVisualState GridVisual;// = *GridStyleMap.Find(InstanceType);
-	GridVisual.GridColorData.EdgeColor = FColor(0, 0, 255, 255);
-	GridVisual.GridColorData.BackgroundColor = FColor(0,0,0,0);
-	FTransform MeshTransform;
-	const FVector GridUnitLocation = GetWorldLocationFromIndex(GridIndex);
-
-	MeshTransform.SetLocation(GridUnitLocation);
-	MeshTransform.SetScale3D(FVector(GridData->GridUnitScale.X, GridData->GridUnitScale.Y, 1.0f));
-	InstancedStaticMeshComponent->AddInstance(MeshTransform, true);
-
-	SetInstancedMeshGridColors(CurrentMaxInstancedMeshIndex,
-		GridVisual.GridColorData.EdgeColor,
-		GridVisual.GridColorData.BackgroundColor
+	const FGridVisualState VisualState = GridStyleMap.FindChecked(InstanceType)
+		.FindChecked(ActivityType);
+	
+	uint16 MeshInstanceIndex = 0;
+	if (FGridInstanceState* GridInstanceState = GridInstanceMap.Find(GridIndex))
+	{
+		GridInstanceState->InstanceType = InstanceType;
+		MeshInstanceIndex = GridInstanceState->MeshInstanceIndex;
+	}
+	else
+	{
+		FTransform MeshTransform;
+		const FVector GridUnitLocation = GetWorldLocationFromIndex(GridIndex);
+		MeshTransform.SetLocation(GridUnitLocation);
+		MeshTransform.SetScale3D(FVector(GridData->GridUnitScale.X, GridData->GridUnitScale.Y, 1.0f));
+		InstancedStaticMeshComponent->AddInstance(MeshTransform, true);
+		GridInstanceMap.Emplace(GridIndex, {
+			InstanceType,
+			ActivityType,
+			CurrentMaxInstancedMeshIndex
+		});
+		MeshInstanceIndex = CurrentMaxInstancedMeshIndex;
+	}
+	
+	SetInstancedMeshGridColors(MeshInstanceIndex,
+		VisualState.GridColorData.EdgeColor,
+		VisualState.GridColorData.BackgroundColor
 	);
 	
-	GridIndexToMapIndexMap.Add(GridIndex, CurrentMaxInstancedMeshIndex);
 	CurrentMaxInstancedMeshIndex++;
+}
+
+void AGridActor::LoadVisualData()
+{
+	check(GridVisualDataTable);
+	TArray<FGridVisualDataRow*> VisualDataRows;
+	GridVisualDataTable->GetAllRows<FGridVisualDataRow>(
+		TEXT(""), VisualDataRows);
+	
+	check(VisualDataRows.Num() != 0);
+
+	for (const FGridVisualDataRow* DataRow : VisualDataRows)
+	{
+		TMap<EGridInstanceActivityType, FGridVisualState>* ActivityStyleMap
+			= GridStyleMap.Find(DataRow->GridInstanceType);
+		if (!ActivityStyleMap)
+		{
+			GridStyleMap.Emplace(DataRow->GridInstanceType, {});
+			ActivityStyleMap = GridStyleMap.Find(DataRow->GridInstanceType);
+		}
+		ActivityStyleMap->Emplace(DataRow->ActivityType, DataRow->GridVisualState);
+	}
 }
 
 void AGridActor::PostInitializeComponents()
@@ -105,7 +141,7 @@ void AGridActor::GenerateGrid()
 	TopRight = FVector2f(Center.X, Center.Y) + FVector2f(Bounds.X, Bounds.Y);
 
 	CalculateDimensions();
-	GridUnitStateMap.Reset();
+	GridStateMap.Reset();
 	if (UNLIKELY(!GridData))
 	{
 		UE_LOG(LogGridSystems, Error, TEXT("Grid Data asset not available"));
@@ -148,7 +184,7 @@ void AGridActor::GenerateGrid()
 				{
 					GridState.GridAccessState = EGridAccessState::OutOfMap;
 				}
-				GridUnitStateMap.Add(FIntPoint(i, j), GridState);
+				GridStateMap.Add(FIntPoint(i, j), GridState);
 				CurrentPosition.Y += GridData->GridUnitSize.Y;
 			}
 			CurrentPosition.X += GridData->GridUnitSize.X;
@@ -177,20 +213,24 @@ FVector AGridActor::GetWorldLocationFromIndex(const FIntPoint& Idx) const
 {
 	const FVector2f MapLocation = BottomLeft + FVector2f(Idx.X, Idx.Y) * GridData->GridUnitSize;
 	
-	return FVector(MapLocation.X, MapLocation.Y, GridUnitStateMap.Find(Idx)->Height);
+	return FVector(MapLocation.X, MapLocation.Y, GridStateMap.Find(Idx)->Height);
 }
 
 
 bool AGridActor::IsValidIndex(const FIntPoint &GridIndex) const
 {
-	return GridIndex.X >= 0 && GridIndex.X < Dimension.X &&
-		GridIndex.Y >= 0 && GridIndex.Y < Dimension.Y;
+	if (GridIndex.X >= 0 && GridIndex.X < Dimension.X &&
+		GridIndex.Y >= 0 && GridIndex.Y < Dimension.Y)
+	{
+		const FGridState GridState = GridStateMap.FindChecked(GridIndex);
+		return GridState.GridAccessState == EGridAccessState::Accessible;
+	}
+	return false;
 }
 
 void AGridActor::DrawDebugGrid()
 {
-	// ActivateDeploymentGrid();
-
+	LoadVisualData();
 	InstancedStaticMeshComponent->ClearInstances();
 
 	InstancedStaticMeshComponent->SetStaticMesh(GridData->GridUnitMesh);
@@ -202,7 +242,7 @@ void AGridActor::DrawDebugGrid()
 		{
 			FTransform MeshTransform;
 			FVector GridUnitLocation = GetWorldLocationFromIndex(FIntPoint(i, j));
-			const FGridState* GridState = GridUnitStateMap.Find(FIntPoint(i, j));
+			const FGridState* GridState = GridStateMap.Find(FIntPoint(i, j));
 
 			if (GridState->GridAccessState != EGridAccessState::Accessible)
 			{
@@ -243,36 +283,41 @@ void AGridActor::DrawDebugGrid()
 				}
 			}
 			SetInstancedMeshGridColors(MeshInstanceIndex, GridColorData.EdgeColor, GridColorData.BackgroundColor);
-			GridIndexToMapIndexMap.Add(FIntPoint(i, j), MeshInstanceIndex);
+			
+			GridInstanceMap.Emplace(FIntPoint(i, j), {
+				EGridInstanceType::DebugGrid,
+				EGridInstanceActivityType::None,
+				MeshInstanceIndex
+			});
 			MeshInstanceIndex++;
 		}
 	}
 	bIsDebugGridActive = true;
 }
 
-void AGridActor::ClearGrid()
+void AGridActor::ClearGridUnits()
 {
 	InstancedStaticMeshComponent->ClearInstances();
-	GridIndexToMapIndexMap.Empty();
+	GridInstanceMap.Empty();
 	bIsDebugGridActive = false;
 	CurrentMaxInstancedMeshIndex = 0;
 }
 
 void AGridActor::DrawDebugDeploymentZone(FIntPoint BottomLeftIdx, FIntPoint TopRightIdx)
 {
-	ClearGrid();
+	ClearGridUnits();
 	DrawDebugGrid();
-	FGridColorData DeploymentColorData;
-	DeploymentColorData.BackgroundColor = FColor(0, 0, 0, 0);
-	DeploymentColorData.EdgeColor = FColor(0, 0, 255, 255);
 	for (SIZE_T i = BottomLeftIdx.X; i <= TopRightIdx.X; i++)
 	{	
 		for (SIZE_T j = BottomLeftIdx.Y; j <= TopRightIdx.Y; j++)
 		{
-			const uint16* IndexRef = GridIndexToMapIndexMap.Find(FIntPoint(i, j));
-			if (IndexRef != nullptr)
+			const FGridInstanceState* GridInstanceState =
+				GridInstanceMap.Find(FIntPoint(i, j));
+			if (GridInstanceState != nullptr)
 			{
-				SetInstancedMeshGridColors(*IndexRef, DeploymentColorData.EdgeColor, DeploymentColorData.BackgroundColor);
+				DrawGridInstance(FIntPoint(i, j),
+					EGridInstanceType::Deployment,
+					EGridInstanceActivityType::None);
 			}
 		}
 	}
@@ -286,22 +331,37 @@ void AGridActor::ActivateDeploymentGrid(const ACombatSituation* CurrentCombatSit
 	CurrentCombatSituation->GetDeploymentZone()->GetDeploymentBounds(
 		DeploymentBottomLeft, DeploymentTopRight);
 	
-	const FIntPoint DeploymentBottomLeftIndex = GetIndexFromLocation(DeploymentBottomLeft);
-	const FIntPoint DeploymentTopRightIndex = GetIndexFromLocation(DeploymentTopRight);
+	const FIntPoint BottomleftIndex = GetIndexFromLocation(DeploymentBottomLeft);
+	const FIntPoint TopRightIndex = GetIndexFromLocation(DeploymentTopRight);
 	
-	ClearGrid();
+	ClearGridUnits();
 	
-	for (int32 i = DeploymentBottomLeftIndex.X; i < DeploymentTopRightIndex.X; i++)
+	for (SIZE_T i = BottomleftIndex.X; i <= TopRightIndex.X; i++)
 	{
-		for (int32 j = DeploymentBottomLeftIndex.Y; j < DeploymentTopRightIndex.Y; j++)
+		for (SIZE_T j = BottomleftIndex.Y; j <= TopRightIndex.Y; j++)
 		{
-			const FGridState* GridState = GridUnitStateMap.Find(FIntPoint(i, j));
+			const FGridState* GridState = GridStateMap.Find(FIntPoint(i, j));
 			if (GridState->GridAccessState == EGridAccessState::Accessible)
 			{
-				UE_LOG(LogTemp, Error, TEXT("DRAWING GRID !!!!"));
-				DrawGridInstance(FIntPoint(i, j), EGridInstanceType::Deployment);
-				
+				DrawGridInstance(FIntPoint(i, j),
+					EGridInstanceType::Deployment,
+					EGridInstanceActivityType::None); 				
 			}
 		}
 	}
+}
+
+void AGridActor::HandleHoverOnGrid(const FIntPoint& GridIndex)
+{
+	if (HoveringGridIndex.X != -1)
+	{
+		FGridInstanceState* HoveringGridInstanceState =
+			GridInstanceMap.Find(HoveringGridIndex);
+		HoveringGridInstanceState->ActivityType = EGridInstanceActivityType::None;
+		DrawGridInstance(HoveringGridIndex,
+			HoveringGridInstanceState->InstanceType,
+			HoveringGridInstanceState->ActivityType);
+	}
+	HoveringGridIndex = GridIndex;
+	DrawGridInstance(GridIndex, EGridInstanceType::Deployment, EGridInstanceActivityType::Hover);				
 }
