@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
-#include "Game/TBSGameState.h"
 #include "GameFramework/Pawn.h"
+#include "GridSystem/GridSystemTypes.h"
 #include "TBSCameraPawnBase.generated.h"
 
 class UInputAction;

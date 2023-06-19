@@ -4,6 +4,8 @@
 #include "Player/HeroCharacter/HeroCharacter.h"
 
 #include "AI/HeroAIController/HeroAIController.h"
+#include "Game/TBSGameState.h"
+#include "GameFramework/PawnMovementComponent.h"
 
 
 // Sets default values
@@ -20,11 +22,19 @@ void AHeroCharacter::BeginPlay()
 	Super::BeginPlay();
 	AIController = GetWorld()->SpawnActor<AHeroAIController>(AHeroAIController::StaticClass());
 	AIController->Possess(this);
+	GameState = Cast<ATBSGameState>(GetWorld()->GetGameState());
+	check(GameState);
+	GameState->GamePhaseChangedEvent.AddDynamic(this, &ThisClass::OnGamePhaseChanged);
+}
+
+void AHeroCharacter::OnGamePhaseChanged(EGamePhase NewGamePhase)
+{
+	GetMovementComponent()->StopMovementImmediately();
 }
 
 // Called every frame
 void AHeroCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	
 }

@@ -3,6 +3,20 @@
 
 DECLARE_LOG_CATEGORY_EXTERN(LogGridSystems, Log, All);
 
+class AHeroCharacter;
+class ATBSCharacter;
+
+
+UENUM()
+enum class EGamePhase : uint8
+{
+	Exploration,
+	Deployment,
+	Battle,
+	Max
+};
+
+
 UENUM(BlueprintType)
 enum class EGridAccessState : uint8
 {
@@ -11,6 +25,7 @@ enum class EGridAccessState : uint8
 	OutOfMap,
 	Max
 };
+
 
 UENUM()
 enum class EGridInstanceType
@@ -91,4 +106,6 @@ struct TBSTEMPLATE_API FGridInstanceState
 	EGridInstanceType InstanceType {EGridInstanceType::Max};
 	EGridInstanceActivityType ActivityType {EGridInstanceActivityType::None};
 	uint16 MeshInstanceIndex {0};
+	UPROPERTY()
+	ATBSCharacter* OccupyingUnit {nullptr};
 };

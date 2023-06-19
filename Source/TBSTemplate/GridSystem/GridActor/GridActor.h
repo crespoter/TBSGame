@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Character/TBSCharacter.h"
 #include "GameFramework/Actor.h"
 #include "GridSystem/GridSystemTypes.h"
 #include "GridActor.generated.h"
@@ -30,6 +31,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FIntPoint GetIndexFromLocation(const FVector2f& GridLocation) const;
 
+	FIntPoint GetIndexFromLocation(const FVector& GridLocation) const;
+
+	void SetCharacterUnitAtIndex(const FIntPoint& GridIndex, ATBSCharacter* Character);
+
 	UFUNCTION(BlueprintCallable)
 	FVector GetWorldLocationFromIndex(const FIntPoint& Idx) const;
 
@@ -55,7 +60,13 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void HandleHoverOnGrid(const FIntPoint& GridIndex);
-	
+
+	void HandleGridSelect(const FIntPoint& Index);
+
+	bool IsGridUnitSelectable(const FIntPoint& Index) const;
+
+	bool IsGridUnitSelectable(const FIntPoint& Index, const FGridInstanceState* GridInstanceState) const;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -68,6 +79,11 @@ protected:
 	void DrawGridInstance(const FIntPoint& GridIndex, EGridInstanceType InstanceType, EGridInstanceActivityType ActivityType);
 
 	void LoadVisualData();
+
+	void SetGridAsActive(const FIntPoint& Index);
+
+	void SetGridAsDefault(const FIntPoint& Index);
+
 	
 public:
 	virtual void PostInitializeComponents() override;
@@ -117,4 +133,10 @@ protected:
 	uint16 CurrentMaxInstancedMeshIndex {0};
 
 	FIntPoint HoveringGridIndex {-1};
+
+	FIntPoint ActiveGridIndex {-1};
+
+	UPROPERTY()
+	ATBSGameState* GameState {nullptr};
+
 };

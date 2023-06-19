@@ -10,6 +10,7 @@
 #include "EnhancedInput/Public/InputMappingContext.h"
 #include "EnhancedInput/Public/EnhancedInputSubsystems.h"
 #include "EnhancedInput/Public/EnhancedInputComponent.h"
+#include "GameFramework/PawnMovementComponent.h"
 #include "GridSystem/GridActor/GridActor.h"
 #include "Player/HeroCharacter/HeroCharacter.h"
 
@@ -80,9 +81,23 @@ void ATBSCameraPawnBase::HandleSelectInputEvent(const FInputActionValue& ActionV
 	{
 		FHitResult HitResult;
 		CachedPlayerController->GetHitResultUnderCursor(GridChannel, true, HitResult);
-		if (HitResult.bBlockingHit)
+		if (CurrentGamePhase == EGamePhase::Exploration)
 		{
 			// TODO:
+			/*
+			const AHeroCharacter* Hero = CachedGameState->GetMainCharacter();
+			AAIController* AIController = Cast<AAIController>(Hero->GetController());
+			AIController->MoveToLocation(HitResult.Location);
+			*/
+		}
+		else if (CurrentGamePhase == EGamePhase::Deployment || CurrentGamePhase == EGamePhase::Battle)
+		{
+			const FVector2f HitLocation2D(HitResult.Location.X, HitResult.Location.Y);
+			const FIntPoint GridIndex = GridActor->GetIndexFromLocation(HitLocation2D);
+			if (GridActor->IsValidIndex(GridIndex))
+			{
+				GridActor->HandleGridSelect(GridIndex);
+			}
 		}
 	}
 }
@@ -95,22 +110,18 @@ void ATBSCameraPawnBase::HandleExecuteInputEvent(const FInputActionValue& Action
 	{
 		if (CurrentGamePhase == EGamePhase::Exploration)
 		{
-			// TODO: Handle in game state
-			/*
-			UNavigationSystemV1* NavSys = UNavigationSystemV1::GetCurrent(GetWorld());
-			
-			if (NavSys)
-			{
-				FVector StartLocation = GetActorLocation();
-				FVector TargetLocation = FVector(1000.0f, 0.0f, 0.0f);
-				UNavigationPath* NavPath;
-				NavPath = NavSys->FindPathToLocationSynchronously(GetWorld(), StartLocation, TargetLocation);
-				TArray<FVector> Waypoints = NavPath->PathPoints;
-			}*/
-			// TODO: Get Hero character from game state
 			const AHeroCharacter* Hero = CachedGameState->GetMainCharacter();
 			AAIController* AIController = Cast<AAIController>(Hero->GetController());
 			AIController->MoveToLocation(HitResult.Location);
+		}
+		else if (CurrentGamePhase == EGamePhase::Deployment || CurrentGamePhase == EGamePhase::Battle)
+		{
+			const FVector2f HitLocation2D(HitResult.Location.X, HitResult.Location.Y);
+			const FIntPoint GridIndex = GridActor->GetIndexFromLocation(HitLocation2D);
+			if (GridActor->IsValidIndex(GridIndex))
+			{
+				// GridActor->HandleGridSelect(GridIndex);
+			}
 		}
 	}
 }

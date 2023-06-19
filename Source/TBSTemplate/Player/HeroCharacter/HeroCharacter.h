@@ -3,7 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
+#include "Character/TBSCharacter.h"
+#include "Game/TBSGameState.h"
+#include "Player/CameraPawn/TBSCameraPawnBase.h"
 #include "HeroCharacter.generated.h"
 
 
@@ -13,11 +15,12 @@ class USpringArmComponent;
 class UInputMappingContext;
 class UInputAction;
 class AHeroAIController;
+class ATBSGameState;
 
 
 // Character class for all playable and enemy characters
 UCLASS()
-class TBSTEMPLATE_API AHeroCharacter : public ACharacter
+class TBSTEMPLATE_API AHeroCharacter : public ATBSCharacter
 {
 	GENERATED_BODY()
 
@@ -31,6 +34,12 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UFUNCTION()
+	void OnGamePhaseChanged(EGamePhase NewGamePhase);
+
 	UPROPERTY()
 	AHeroAIController* AIController {nullptr};
+
+	UPROPERTY()
+	ATBSGameState* GameState {nullptr};
 };

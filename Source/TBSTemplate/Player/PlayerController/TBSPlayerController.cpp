@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "TBSPlayerController.h"
 #include "Cheats/TBSCheatManager.h"
+#include "GridSystem/GridSystemTypes.h"
 #include "Game/TBSGameState.h"
 
 ATBSPlayerController::ATBSPlayerController(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)

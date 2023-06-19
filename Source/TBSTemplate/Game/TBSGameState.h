@@ -4,23 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameStateBase.h"
+#include "GridSystem/GridSystemTypes.h"
 #include "TBSGameState.generated.h"
 
 class UGridConfigurationActorComponent;
 class AGridActor;
 class ATBSCameraPawnBase;
 class AHeroCharacter;
-class UBattleStateComponent;
 class ACombatSituation;
 
-UENUM()
-enum class EGamePhase : uint8
-{
-	Exploration,
-	Deployment,
-	Battle,
-	Max
-};
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FonGamePhaseChanged, EGamePhase, GamePhase);
 
@@ -41,7 +33,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE EGamePhase GetCurrentGamePhase() const;
 
-	FORCEINLINE UBattleStateComponent* GetBattleStateComponent() const;
 
 	FORCEINLINE AHeroCharacter* GetMainCharacter() const;
 	
@@ -62,9 +53,6 @@ protected:
 protected:
 	EGamePhase CurrentPhase {EGamePhase::Exploration};
 	
-	UPROPERTY(EditDefaultsOnly)
-	UBattleStateComponent* BattleStateComponent { nullptr };
-
 	UPROPERTY()
 	AGridActor* GridActor {nullptr};
 
