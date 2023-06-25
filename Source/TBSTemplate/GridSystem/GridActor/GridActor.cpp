@@ -76,7 +76,7 @@ void AGridActor::DrawGridInstance(const FIntPoint& GridIndex, const EGridInstanc
 	const FGridVisualState VisualState = GridStyleMap.FindChecked(InstanceType)
 		.FindChecked(ActivityType);
 	
-	uint16 MeshInstanceIndex = 0;
+	uint16 MeshInstanceIndex = 0;	
 	if (FGridInstanceState* GridInstanceState = GridInstanceMap.Find(GridIndex))
 	{
 		GridInstanceState->InstanceType = InstanceType;
@@ -130,13 +130,13 @@ void AGridActor::LoadVisualData()
 void AGridActor::SetGridAsActive(const FIntPoint& Index)
 {
 	FGridInstanceState* GridInstanceState = GridInstanceMap.Find(Index);
-	if (Index == HoveringIndex)
+	if (Index == HoveringGridIndex)
 	{
-		HoveringIndex = {-1, -1};
+		ResetHoveringGrid();
 	}
 	if (ActiveGridIndex.X != -1)
 	{
-		SetGridAsDefault(Index);
+		ResetActiveGrid();
 	}
 	check(GridInstanceState);
 	GridInstanceState->ActivityType = EGridInstanceActivityType::Active;
@@ -152,11 +152,47 @@ void AGridActor::SetGridAsDefault(const FIntPoint& Index)
 	DrawGridInstance(Index, GridInstanceState->InstanceType, EGridInstanceActivityType::None);
 }
 
-
-void AGridActor::PostInitializeComponents()
+void AGridActor::ResetActiveGrid()
 {
-	Super::PostInitializeComponents();
+	if (ActiveGridIndex.X == -1)
+	{
+		return;
+	}
+	
+	FGridInstanceState* GridInstanceState =
+		GridInstanceMap.Find(ActiveGridIndex);
+
+	if (GridInstanceState)
+	{
+		GridInstanceState->ActivityType = EGridInstanceActivityType::None;
+	}
+	DrawGridInstance(ActiveGridIndex, GridInstanceState->InstanceType,
+		GridInstanceState->ActivityType);
+	
+	ActiveGridIndex = {-1, -1};
 }
+
+void AGridActor::ResetHoveringGrid()
+{
+	if (HoveringGridIndex.X == -1)
+	{
+		return;
+	}
+	
+	FGridInstanceState* GridInstanceState =
+		GridInstanceMap.Find(HoveringGridIndex);
+
+	if (GridInstanceState)
+	{
+		GridInstanceState->ActivityType = EGridInstanceActivityType::None;
+	}
+
+	DrawGridInstance(HoveringGridIndex, GridInstanceState->InstanceType,
+		GridInstanceState->ActivityType);
+	
+	HoveringGridIndex = {-1, -1};
+}
+
 
 
 void AGridActor::Tick(float DeltaTime)
@@ -404,15 +440,21 @@ void AGridActor::ActivateDeploymentGrid(const ACombatSituation* CurrentCombatSit
 
 void AGridActor::HandleHoverOnGrid(const FIntPoint& GridIndex)
 {
+	if (HoveringGridIndex == GridIndex)
+	{
+		return;
+	}
+	
+	if (!IsGridIndexHoverable(GridIndex) || GridIndex == ActiveGridIndex)
+	{
+		ResetHoveringGrid();
+		return;
+	}
 	if (HoveringGridIndex.X != -1)
 	{
-		FGridInstanceState* HoveringGridInstanceState =
-			GridInstanceMap.Find(HoveringGridIndex);
-		HoveringGridInstanceState->ActivityType = EGridInstanceActivityType::None;
-		DrawGridInstance(HoveringGridIndex,
-			HoveringGridInstanceState->InstanceType,
-			HoveringGridInstanceState->ActivityType);
+		ResetHoveringGrid();
 	}
+
 	HoveringGridIndex = GridIndex;
 	DrawGridInstance(GridIndex, EGridInstanceType::Deployment, EGridInstanceActivityType::Hover);				
 }
@@ -447,16 +489,51 @@ bool AGridActor::IsGridUnitSelectable(const FIntPoint& Index) const
 
 bool AGridActor::IsGridUnitSelectable(const FIntPoint& Index, const FGridInstanceState* GridInstanceState) const
 {
+	if (!IsValidIndex(Index))
+	{
+		return false;
+	}
+	
 	bool bCanBeSelected = false;
 	const EGamePhase GamePhase = GameState->GetCurrentGamePhase();
 	switch(GamePhase)
 	{
 	case EGamePhase::Deployment:
 		{
-			bCanBeSelected = GridInstanceState->OccupyingUnit && GridInstanceState->ActivityType != EGridInstanceActivityType::Active;
+			bCanBeSelected = GridInstanceState->OccupyingUnit &&
+				GridInstanceState->ActivityType != EGridInstanceActivityType::Active &&
+				GridInstanceState->InstanceType == EGridInstanceType::Deployment;
 			break;
 		}
 	default:;
 	}
 	return bCanBeSelected;
+}
+
+bool AGridActor::IsGridIndexHoverable(const FIntPoint& Index)
+{
+	const FGridInstanceState* GridInstanceState = GridInstanceMap.Find(Index);
+
+	if (!IsValidIndex(Index) || !GridInstanceState)
+	{
+		return false;
+	}
+
+	bool bCanBeHovered = false;
+	const EGamePhase GamePhase = GameState->GetCurrentGamePhase();
+
+	
+	
+	switch(GamePhase)
+	{
+	case EGamePhase::Deployment:
+		{
+			bCanBeHovered = GridInstanceState->ActivityType != EGridInstanceActivityType::Hover
+				&& GridInstanceState->InstanceType == EGridInstanceType::Deployment;
+			
+			break;
+		}
+	default:;
+	}
+	return bCanBeHovered;
 }

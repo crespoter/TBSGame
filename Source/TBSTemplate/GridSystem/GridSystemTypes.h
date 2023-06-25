@@ -7,6 +7,7 @@ class AHeroCharacter;
 class ATBSCharacter;
 
 
+// TODO: Move GamePhase to a new Type file
 UENUM()
 enum class EGamePhase : uint8
 {

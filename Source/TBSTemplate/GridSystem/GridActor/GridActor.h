@@ -13,6 +13,14 @@ class UBoxComponent;
 class ACombatSituation;
 class UDataTable;
 
+
+/*
+TODO:
+	Split this class into
+	1. GridDataComponent
+	2. GridActor
+	3. GridVisualComponent
+*/
 UCLASS()
 class TBSTEMPLATE_API AGridActor : public AActor
 {
@@ -67,6 +75,8 @@ public:
 
 	bool IsGridUnitSelectable(const FIntPoint& Index, const FGridInstanceState* GridInstanceState) const;
 
+	bool IsGridIndexHoverable(const FIntPoint& Index);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -84,19 +94,17 @@ protected:
 
 	void SetGridAsDefault(const FIntPoint& Index);
 
+	void ResetActiveGrid();
+
+	void ResetHoveringGrid();
+
+
 	
 public:
-	virtual void PostInitializeComponents() override;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Grid Data")
 	UGridGenerationData* GridData;
-
-	UPROPERTY(BlueprintReadOnly)
-	FIntPoint SelectedIndex {-1};
-
-	UPROPERTY(BlueprintReadOnly)
-	FIntPoint HoveringIndex {-1};
-
+	
 	UPROPERTY(EditDefaultsOnly)
 	UDataTable* GridVisualDataTable {nullptr};
 
