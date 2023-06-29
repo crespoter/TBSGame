@@ -11,7 +11,7 @@
 class ATBSGameState;
 class UBoxComponent;
 class ACombatSituation;
-class UDataTable;
+class UGridStateComponent;
 
 
 /*
@@ -21,6 +21,7 @@ TODO:
 	2. GridActor
 	3. GridVisualComponent
 */
+
 UCLASS()
 class TBSTEMPLATE_API AGridActor : public AActor
 {
@@ -29,11 +30,9 @@ class TBSTEMPLATE_API AGridActor : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AGridActor();
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
 	// Generates the grid.
-	UFUNCTION(CallInEditor)
+	UFUNCTION()
 	void GenerateGrid();
 
 	UFUNCTION(BlueprintCallable)
@@ -42,6 +41,12 @@ public:
 	FIntPoint GetIndexFromLocation(const FVector& GridLocation) const;
 
 	void SetCharacterUnitAtIndex(const FIntPoint& GridIndex, ATBSCharacter* Character);
+
+	UFUNCTION(Exec, CallInEditor, Category = "Grid")
+	void DrawDebugGrid();
+
+	UFUNCTION(Exec, CallInEditor, Category = "Grid")
+	void ClearGridUnits();
 
 	UFUNCTION(BlueprintCallable)
 	FVector GetWorldLocationFromIndex(const FIntPoint& Idx) const;
@@ -53,16 +58,9 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable)
 	bool IsValidIndex(const FIntPoint &GridIndex) const;
-
-	UFUNCTION(Exec, CallInEditor, Category = "Grid")
-	void DrawDebugGrid();
-
-	UFUNCTION(Exec, CallInEditor, Category = "Grid")
-	void ClearGridUnits();
 	
-	UFUNCTION()
-	void DrawDebugDeploymentZone(FIntPoint BottomLeftIdx, FIntPoint TopRightIdx);
 	
+
 	UFUNCTION(BlueprintCallable)
 	void ActivateDeploymentGrid(const ACombatSituation* CurrentCombatSituation);
 
@@ -73,22 +71,23 @@ public:
 
 	bool IsGridUnitSelectable(const FIntPoint& Index) const;
 
-	bool IsGridUnitSelectable(const FIntPoint& Index, const FGridInstanceState* GridInstanceState) const;
+	bool IsGridUnitSelectable(const FIntPoint& Index, const FGridState* GridInstanceState) const;
 
 	bool IsGridIndexHoverable(const FIntPoint& Index);
 
-protected:
+	UFUNCTION()
+	void DrawDebugDeploymentZone(FIntPoint BottomLeftIdx, FIntPoint TopRightIdx);
+
+private:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	void SetInstancedMeshGridColors(const uint16 MeshInstanceIndex,
 		const FColor &EdgeColor, const FColor &BackgroundColor);
 
-	void CalculateDimensions();
 
 	void DrawGridInstance(const FIntPoint& GridIndex, EGridInstanceType InstanceType, EGridInstanceActivityType ActivityType);
 
-	void LoadVisualData();
 
 	void SetGridAsActive(const FIntPoint& Index);
 
@@ -97,41 +96,22 @@ protected:
 	void ResetActiveGrid();
 
 	void ResetHoveringGrid();
+	
+	void CalculateDimensions();
 
 
-	
-public:
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Grid Data")
-	UGridGenerationData* GridData;
-	
 	UPROPERTY(EditDefaultsOnly)
-	UDataTable* GridVisualDataTable {nullptr};
-
-	TMap<EGridInstanceType,
-		TMap<EGridInstanceActivityType, FGridVisualState>> GridStyleMap;
-
-protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UInstancedStaticMeshComponent* InstancedStaticMeshComponent {nullptr};
 
+	UPROPERTY(EditDefaultsOnly)
+	UGridStateComponent* GridStateComponent {nullptr};
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Grid Generation")
+	UPROPERTY(EditAnywhere, Category = "Grid Generation")
 	UBoxComponent* GridArea {nullptr};
 
-	UPROPERTY()
-	FVector2f BottomLeft {0};
-	FVector2f TopRight {0};
-	FVector2D Dimension;
-
-
-	const float RayTraceHeight = 1000.0f;
-
-	UPROPERTY()
-	TMap<FIntPoint, FGridState> GridStateMap;
-
-	UPROPERTY()
-	TMap<FIntPoint, FGridInstanceState> GridInstanceMap;
+	UPROPERTY(EditDefaultsOnly, Category="Grid Generation")
+	float RayTraceHeight = 1000.0f;
+	
 
 	UPROPERTY()
 	bool bIsGridGenerated { false };
@@ -139,12 +119,12 @@ protected:
 	mutable bool bIsDebugGridActive {false};
 	
 	uint16 CurrentMaxInstancedMeshIndex {0};
-
-	FIntPoint HoveringGridIndex {-1};
-
-	FIntPoint ActiveGridIndex {-1};
-
+	
 	UPROPERTY()
 	ATBSGameState* GameState {nullptr};
+
+	FVector2f BottomLeft {0};
+	FVector2f TopRight {0};
+	FVector2D Dimension;
 
 };

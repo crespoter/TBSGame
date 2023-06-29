@@ -33,7 +33,7 @@ enum class EGridInstanceType
 {
 	Deployment,
 	DebugGrid,
-	Max
+	None
 };
 
 UENUM()
@@ -86,27 +86,34 @@ public:
 	TEnumAsByte<ECollisionChannel> GridPlacementTraceChannel { ECollisionChannel::ECC_WorldStatic };
 };
 
-/**
- * Grid state for the whole map. Static details are stored here like grid height and static state.
- */
+
 USTRUCT()
 struct TBSTEMPLATE_API FGridState
 {
 	GENERATED_BODY()
-	EGridAccessState GridAccessState {EGridAccessState::Max};
-	float Height {0.0f};
-};
 
-/**
- *	Grid state for each instance that is actually spawned.
-*/
-USTRUCT()
-struct TBSTEMPLATE_API FGridInstanceState
-{
-	GENERATED_BODY()
-	EGridInstanceType InstanceType {EGridInstanceType::Max};
-	EGridInstanceActivityType ActivityType {EGridInstanceActivityType::None};
+	FGridState() = default;
+	
+	FGridState(EGridInstanceType InstanceType, EGridInstanceActivityType ActivityType, uint16 MeshInstanceIndex);
+
+	FORCEINLINE EGridInstanceType GetInstanceType() const;
+	FORCEINLINE EGridInstanceActivityType GetActivityType() const;
+	FORCEINLINE void SetInstanceType(const EGridInstanceType InInstanceType);
+	FORCEINLINE void SetActivityType(const EGridInstanceActivityType InActivityType);
+
+	
+	EGridAccessState GridAccessState {EGridAccessState::Max};
+
+	float Height {0.0f};
+
 	uint16 MeshInstanceIndex {0};
+
+	bool bIsUnitRendered {false};
+
 	UPROPERTY()
 	ATBSCharacter* OccupyingUnit {nullptr};
+
+private:
+	EGridInstanceType InstanceType {EGridInstanceType::None};
+	EGridInstanceActivityType ActivityType {EGridInstanceActivityType::None};
 };

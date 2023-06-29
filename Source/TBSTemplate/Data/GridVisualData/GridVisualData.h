@@ -14,7 +14,7 @@ struct TBSTEMPLATE_API FGridVisualDataRow : public FTableRowBase
 	GENERATED_BODY()
 	
 	UPROPERTY(EditInstanceOnly)
-	EGridInstanceType GridInstanceType {EGridInstanceType::Max};
+	EGridInstanceType GridInstanceType {EGridInstanceType::None};
 
 	UPROPERTY(EditInstanceOnly)
 	EGridInstanceActivityType ActivityType {EGridInstanceActivityType::None};
