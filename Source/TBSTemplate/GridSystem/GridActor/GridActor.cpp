@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "GridActor.h"
 
+#include "EngineUtils.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "GridSystem/GridSystemTypes.h"
 #include "GridSystem/GridBlockerVolume/GridBlockerVolume.h"
@@ -78,12 +79,18 @@ void AGridActor::DrawGridInstance(const FIntPoint& GridIndex, const EGridInstanc
 
 	check(VisualState);
 	uint16 MeshInstanceIndex;
-	if (const FGridState* GridInstanceState = GridStateComponent->GetGridUnitState(GridIndex))
+	const FGridState* GridInstanceState = GridStateComponent->GetGridUnitState(GridIndex);
+
+	if (!GridInstanceState)
 	{
-		FGridState NewGridState = *GridInstanceState;
+		return;
+	}
+	FGridState NewGridState = *GridInstanceState;
+
+	if (GridInstanceState->bIsUnitRendered)
+	{
 		NewGridState.SetInstanceType(InstanceType);
 		MeshInstanceIndex = GridInstanceState->MeshInstanceIndex;
-		GridStateComponent->AddGridState(GridIndex, NewGridState);
 	}
 	else
 	{
@@ -92,19 +99,21 @@ void AGridActor::DrawGridInstance(const FIntPoint& GridIndex, const EGridInstanc
 		MeshTransform.SetLocation(GridUnitLocation);
 		MeshTransform.SetScale3D(FVector(GridStateComponent->GetGridUnitScale().X, GridStateComponent->GetGridUnitScale().Y, 1.0f));
 		InstancedStaticMeshComponent->AddInstance(MeshTransform, true);
-		GridStateComponent->AddGridState(GridIndex, {
-			InstanceType,
-			ActivityType,
-			CurrentMaxInstancedMeshIndex
-		});
+	
+		NewGridState.SetInstanceType(InstanceType);
+		NewGridState.SetActivityType(ActivityType);
+		NewGridState.MeshInstanceIndex = CurrentMaxInstancedMeshIndex;
+
 		MeshInstanceIndex = CurrentMaxInstancedMeshIndex;
+		CurrentMaxInstancedMeshIndex++;
 	}
+	GridStateComponent->AddGridState(GridIndex, NewGridState);
+
 	
 	SetInstancedMeshGridColors(MeshInstanceIndex,
 		VisualState->GridColorData.EdgeColor,
 		VisualState->GridColorData.BackgroundColor
 	);
-	CurrentMaxInstancedMeshIndex++;
 }
 
 
@@ -158,7 +167,7 @@ void AGridActor::ResetActiveGrid()
 
 void AGridActor::ResetHoveringGrid()
 {
-	if (GridStateComponent->IsHoveringIndexSet())
+	if (!GridStateComponent->IsHoveringIndexSet())
 	{
 		return;
 	}
@@ -184,7 +193,7 @@ void AGridActor::GenerateGrid()
 	CalculateDimensions();
 	GridStateComponent->ResetGridState();
 
-	const FVector2f GridUnitSize = GridStateComponent->GetGridUnitScale();
+	const FVector2f GridUnitSize = GridStateComponent->GetGridUnitSize();
 
 	// Center the bottom left on the bottom left tile
 	BottomLeft = BottomLeft  + GridUnitSize / 2.0f;
@@ -208,7 +217,6 @@ void AGridActor::GenerateGrid()
 			{
 				if (!Cast<AGridBlockerVolume>(HitResult.GetActor()))
 				{
-
 					GridState.GridAccessState = EGridAccessState::Accessible;
 					GridState.Height = HitResult.ImpactPoint.Z + 5.0f;
 				}
@@ -228,10 +236,6 @@ void AGridActor::GenerateGrid()
 		CurrentPosition.Y = BottomLeft.Y;
 	}
 	bIsGridGenerated = true;
-	if (bIsDebugGridActive)
-	{
-		DrawDebugGrid();
-	}
 }
 
 
@@ -275,12 +279,13 @@ bool AGridActor::IsValidIndex(const FIntPoint &GridIndex) const
 
 void AGridActor::DrawDebugGrid()
 {
+
 	GenerateGrid();
 	GridStateComponent->LoadVisualData();
 	InstancedStaticMeshComponent->ClearInstances();
-
 	InstancedStaticMeshComponent->SetStaticMesh(GridStateComponent->GetGridUnitMesh());
-
+	
+	
 	uint16 MeshInstanceIndex = 0;
 	for (uint16 i = 0; i < Dimension.X; i++)
 	{
@@ -340,6 +345,14 @@ void AGridActor::DrawDebugGrid()
 			MeshInstanceIndex++;
 		}
 	}
+	
+	for (TActorIterator<ADeploymentZone> ActorItr(GetWorld()); ActorItr ;++ActorItr)
+	{
+		FVector2f DeploymentBottomLeft, DeploymentTopRight;
+		ActorItr->GetDeploymentBounds(DeploymentBottomLeft, DeploymentTopRight);
+		
+		DrawDebugDeploymentZone(GetIndexFromLocation(DeploymentBottomLeft), GetIndexFromLocation(DeploymentTopRight));
+	}
 	bIsDebugGridActive = true;
 }
 
@@ -353,9 +366,6 @@ void AGridActor::ClearGridUnits()
 
 void AGridActor::DrawDebugDeploymentZone(FIntPoint BottomLeftIdx, FIntPoint TopRightIdx)
 {
-	ClearGridUnits();
-	DrawDebugGrid();
-	
 	for (SIZE_T i = BottomLeftIdx.X; i <= TopRightIdx.X; i++)
 	{	
 		for (SIZE_T j = BottomLeftIdx.Y; j <= TopRightIdx.Y; j++)
@@ -384,7 +394,7 @@ void AGridActor::ActivateDeploymentGrid(const ACombatSituation* CurrentCombatSit
 	const FIntPoint TopRightIndex = GetIndexFromLocation(DeploymentTopRight);
 	
 	ClearGridUnits();
-	
+
 	for (SIZE_T i = BottomLeftIndex.X; i <= TopRightIndex.X; i++)
 	{
 		for (SIZE_T j = BottomLeftIndex.Y; j <= TopRightIndex.Y; j++)
@@ -394,7 +404,7 @@ void AGridActor::ActivateDeploymentGrid(const ACombatSituation* CurrentCombatSit
 			{
 				DrawGridInstance(FIntPoint(i, j),
 					EGridInstanceType::Deployment,
-					EGridInstanceActivityType::None); 				
+					EGridInstanceActivityType::None);
 			}
 		}
 	}
@@ -407,6 +417,7 @@ void AGridActor::ActivateDeploymentGrid(const ACombatSituation* CurrentCombatSit
 
 void AGridActor::HandleHoverOnGrid(const FIntPoint& GridIndex)
 {
+	
 	if (GridStateComponent->GetHoveringGridIndex() == GridIndex)
 	{
 		return;
@@ -417,10 +428,8 @@ void AGridActor::HandleHoverOnGrid(const FIntPoint& GridIndex)
 		ResetHoveringGrid();
 		return;
 	}
-	if (GridStateComponent->IsHoveringIndexSet())
-	{
-		ResetHoveringGrid();
-	}
+	
+	ResetHoveringGrid();
 	GridStateComponent->SetHoveringGridIndex(GridIndex);
 	DrawGridInstance(GridIndex, EGridInstanceType::Deployment, EGridInstanceActivityType::Hover);				
 }

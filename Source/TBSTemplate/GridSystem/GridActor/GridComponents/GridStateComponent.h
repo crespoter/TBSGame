@@ -70,5 +70,5 @@ private:
 	FIntPoint HoveringGridIndex {-1};
 	FIntPoint ActiveGridIndex {-1};
 
-	TSet<FIntPoint> RenderedGridsCache; 
+	TSet<FIntPoint> RenderedGridIndexes; 
 };
