@@ -12,14 +12,12 @@ class ATBSGameState;
 class UBoxComponent;
 class ACombatSituation;
 class UGridStateComponent;
+class UGridVisualComponent;
 
 
 /*
 TODO:
-	Split this class into
-	1. GridDataComponent
-	2. GridActor
-	3. GridVisualComponent
+	Split Grid Visual Component
 */
 
 UCLASS()
@@ -59,8 +57,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool IsValidIndex(const FIntPoint &GridIndex) const;
 	
-	
-
 	UFUNCTION(BlueprintCallable)
 	void ActivateDeploymentGrid(const ACombatSituation* CurrentCombatSituation);
 
@@ -75,18 +71,15 @@ public:
 
 	bool IsGridIndexHoverable(const FIntPoint& Index);
 
-	UFUNCTION()
-	void DrawDebugDeploymentZone(FIntPoint BottomLeftIdx, FIntPoint TopRightIdx);
+	FORCEINLINE FVector2D GetDimensions() const;
+
+	void UpdateGridState(const FIntPoint& GridIndex, EGridInstanceType InstanceType, EGridInstanceActivityType ActivityType);
+
 
 private:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	void SetInstancedMeshGridColors(const uint16 MeshInstanceIndex,
-		const FColor &EdgeColor, const FColor &BackgroundColor);
-
-
-	void DrawGridInstance(const FIntPoint& GridIndex, EGridInstanceType InstanceType, EGridInstanceActivityType ActivityType);
 
 
 	void SetGridAsActive(const FIntPoint& Index);
@@ -103,8 +96,11 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	UInstancedStaticMeshComponent* InstancedStaticMeshComponent {nullptr};
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY()
 	UGridStateComponent* GridStateComponent {nullptr};
+
+	UPROPERTY()
+	UGridVisualComponent* GridVisualComponent {nullptr};
 
 	UPROPERTY(EditAnywhere, Category = "Grid Generation")
 	UBoxComponent* GridArea {nullptr};
@@ -115,10 +111,7 @@ private:
 
 	UPROPERTY()
 	bool bIsGridGenerated { false };
-
-	mutable bool bIsDebugGridActive {false};
 	
-	uint16 CurrentMaxInstancedMeshIndex {0};
 	
 	UPROPERTY()
 	ATBSGameState* GameState {nullptr};
@@ -126,5 +119,4 @@ private:
 	FVector2f BottomLeft {0};
 	FVector2f TopRight {0};
 	FVector2D Dimension;
-
 };

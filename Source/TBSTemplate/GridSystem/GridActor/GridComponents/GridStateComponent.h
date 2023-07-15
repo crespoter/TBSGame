@@ -39,7 +39,7 @@ public:
 	
 	const FGridVisualState* GetGridVisualState(const EGridInstanceType InstanceType, const EGridInstanceActivityType ActivityType) const;
 
-	const FGridState* GetGridUnitState(const FIntPoint& Index) const;
+	bool GetGridUnitState(const FIntPoint& Index, FGridState& OutGridState) const;
 	
 	void AddGridState(const FIntPoint& Index, const FGridState& GridInstanceState);
 
@@ -56,11 +56,17 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	UDataTable* GridVisualDataTable {nullptr};
 
+	UPROPERTY()
+	FGridChangedDelegate GridVisualStateUpdatedDelegate;
+
+	UPROPERTY()
+	FGridChangedDelegate GridUpdatedDelegate;
+
 protected:
 	virtual void BeginPlay() override;
 
 private:
-
+	
 	TMap<EGridInstanceType,
 		TMap<EGridInstanceActivityType, FGridVisualState>> GridStyleMap;
 
@@ -70,5 +76,5 @@ private:
 	FIntPoint HoveringGridIndex {-1};
 	FIntPoint ActiveGridIndex {-1};
 
-	TSet<FIntPoint> RenderedGridIndexes; 
+	TSet<FIntPoint> RenderedGridIndexes;
 };

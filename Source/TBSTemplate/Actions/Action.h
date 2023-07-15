@@ -25,19 +25,19 @@ enum class EActionType
 class TBSTEMPLATE_API UAction : public UObject
 {
 public:
-	virtual ~UAction();
-
-	virtual bool IsInRange(const FIntPoint& Index) const = 0;
+	virtual bool CheckIfValidToInitialize(const FIntPoint& Index) const = 0;
+	virtual void Cancel() = 0;
 	virtual void Execute() = 0;
 	
-protected:
-	UAction(AGridActor* InGridActor,
+	virtual void Initialize(AGridActor* InGridActor,
 		ATBSCharacter* InInstigator,
-		const FIntPoint& InInstigatingIndex,
-		const EActionType InActionType);
+		const FIntPoint& InInstigatingIndex);
+protected:
 
 	AGridActor* GridActor {nullptr};
 	ATBSCharacter* Instigator {nullptr};
 	FIntPoint InstigatingIndex {-1};
 	EActionType ActionType {EActionType::None};
+
+	bool bIsInitialized {false};
 };

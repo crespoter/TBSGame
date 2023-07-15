@@ -95,19 +95,18 @@ struct TBSTEMPLATE_API FGridState
 	FGridState() = default;
 	
 	FGridState(EGridInstanceType InstanceType, EGridInstanceActivityType ActivityType, uint16 MeshInstanceIndex);
-
+	
 	FORCEINLINE EGridInstanceType GetInstanceType() const;
 	FORCEINLINE EGridInstanceActivityType GetActivityType() const;
 	FORCEINLINE void SetInstanceType(const EGridInstanceType InInstanceType);
 	FORCEINLINE void SetActivityType(const EGridInstanceActivityType InActivityType);
 
+	bool IsVisuallySameWith(const FGridState& OtherGridState) const;
 	
 	EGridAccessState GridAccessState {EGridAccessState::Max};
 
 	float Height {0.0f};
-
-	uint16 MeshInstanceIndex {0};
-
+	
 	bool bIsUnitRendered {false};
 
 	UPROPERTY()
@@ -117,3 +116,18 @@ private:
 	EGridInstanceType InstanceType {EGridInstanceType::None};
 	EGridInstanceActivityType ActivityType {EGridInstanceActivityType::None};
 };
+
+
+UENUM()
+enum class EUpdateOpType
+{
+	Created,
+	Updated,
+	Reset
+};
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FGridChangedDelegate,
+	const FGridState&, UpdatedGridState,
+	const FIntPoint&, Index,
+	const EUpdateOpType, UpdationOperation
+);

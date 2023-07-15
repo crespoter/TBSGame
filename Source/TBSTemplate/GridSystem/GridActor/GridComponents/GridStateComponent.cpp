@@ -2,7 +2,6 @@
 
 
 #include "GridSystem/GridActor/GridComponents/GridStateComponent.h"
-
 #include "Data/GridVisualData/GridVisualData.h"
 
 // Sets default values for this component's properties
@@ -72,26 +71,58 @@ const FGridVisualState* UGridStateComponent::GetGridVisualState(const EGridInsta
 	return ActivityMap->Find(ActivityType);
 }
 
-const FGridState* UGridStateComponent::GetGridUnitState(const FIntPoint& Index) const
+bool UGridStateComponent::GetGridUnitState(const FIntPoint& Index, FGridState& OutGridState) const
 {
-	return GridStateMap.Find(Index);
+	const FGridState* GridStateRef = GridStateMap.Find(Index);
+	if (GridStateRef)
+	{
+		OutGridState = *GridStateRef;
+		return true;
+	}
+	return false;
 }
 
 void UGridStateComponent::AddGridState(const FIntPoint& Index, const FGridState& GridInstanceState)
 {
-	const FGridState* OldGridState = GridStateMap.Find(Index);
-	if (OldGridState)
+	FGridState* CurrentGridState = GridStateMap.Find(Index);
+	EUpdateOpType Op;
+
+	bool bShouldRender = false;
+	
+	if (CurrentGridState)
 	{
-		if (OldGridState->bIsUnitRendered && !GridInstanceState.bIsUnitRendered)
+		if (CurrentGridState->bIsUnitRendered && !GridInstanceState.bIsUnitRendered)
 		{
 			RenderedGridIndexes.Remove(Index);
+			bShouldRender = true;
 		}
-		else if (!OldGridState->bIsUnitRendered && GridInstanceState.bIsUnitRendered)
+		else if (!CurrentGridState->bIsUnitRendered && GridInstanceState.bIsUnitRendered)
 		{
 			RenderedGridIndexes.Add(Index);
+			bShouldRender = true;
 		}
+		else
+		{
+			bShouldRender = !CurrentGridState->IsVisuallySameWith(GridInstanceState);
+		}
+		Op = EUpdateOpType::Updated;
+		*CurrentGridState = GridInstanceState;
 	}
-	GridStateMap.Emplace(Index, GridInstanceState);
+	else
+	{
+		Op = EUpdateOpType::Created;
+		RenderedGridIndexes.Add(Index);
+		GridStateMap.Emplace(Index, GridInstanceState);
+		bShouldRender = true;
+	}
+	// TODO: Remove
+	// bShouldRender = true;
+	if (bShouldRender)
+	{
+		GridVisualStateUpdatedDelegate.Broadcast(GridInstanceState, Index, Op);
+	}
+	
+	GridUpdatedDelegate.Broadcast(GridInstanceState, Index, Op);
 }
 
 void UGridStateComponent::SetVisibleGridUnitsAsHidden()
@@ -103,15 +134,19 @@ void UGridStateComponent::SetVisibleGridUnitsAsHidden()
 		if (GridState->bIsUnitRendered)
 		{
 			GridState->SetInstanceType(EGridInstanceType::None);
+			GridUpdatedDelegate.Broadcast(*GridState, Index, EUpdateOpType::Updated);
 		}
 	}
 	RenderedGridIndexes.Reset();
+	GridVisualStateUpdatedDelegate.Broadcast(FGridState(), FIntPoint(), EUpdateOpType::Reset);
 }
 
 void UGridStateComponent::ResetGridState()
 {
 	GridStateMap.Reset();
 	RenderedGridIndexes.Reset();
+	GridVisualStateUpdatedDelegate.Broadcast(FGridState(), FIntPoint(), EUpdateOpType::Reset);
+	GridUpdatedDelegate.Broadcast(FGridState(), FIntPoint(), EUpdateOpType::Reset);
 }
 
 void UGridStateComponent::LoadVisualData()
@@ -144,5 +179,4 @@ void UGridStateComponent::BeginPlay()
 	check(GridDataAsset);
 	check(GridVisualDataTable);
 }
-
 

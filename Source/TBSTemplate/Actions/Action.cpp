@@ -3,15 +3,12 @@
 
 #include "Actions/Action.h"
 
-UAction::UAction(AGridActor* InGridActor, ATBSCharacter* InInstigator,
-	const FIntPoint& InInstigatingIndex, const EActionType InActionType) :
-		GridActor(InGridActor),
-		Instigator(InInstigator),
-		InstigatingIndex(InInstigatingIndex),
-		ActionType(InActionType)
+void UAction::Initialize(AGridActor* InGridActor, ATBSCharacter* InInstigator,
+	const FIntPoint& InInstigatingIndex)
 {
-}
-
-UAction::~UAction()
-{
+	check(InGridActor);
+	check(InInstigator);
+	GridActor = InGridActor;
+	Instigator = InInstigator;
+	InstigatingIndex = InInstigatingIndex;
 }
