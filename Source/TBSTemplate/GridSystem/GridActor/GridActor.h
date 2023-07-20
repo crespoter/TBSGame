@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Character/TBSCharacter.h"
 #include "GameFramework/Actor.h"
 #include "GridSystem/GridSystemTypes.h"
 #include "GridActor.generated.h"
@@ -13,11 +12,11 @@ class UBoxComponent;
 class ACombatSituation;
 class UGridStateComponent;
 class UGridVisualComponent;
+class UGridAction;
 
 
-/*
-TODO:
-	Split Grid Visual Component
+/**
+ * -Only one grid can be active at a time
 */
 
 UCLASS()
@@ -75,6 +74,10 @@ public:
 
 	void UpdateGridState(const FIntPoint& GridIndex, EGridInstanceType InstanceType, EGridInstanceActivityType ActivityType);
 
+	FORCEINLINE const UGridStateComponent* GetGridStateComponent() const;
+
+	FORCEINLINE UGridStateComponent* GetGridStateComponent();
+
 
 private:
 	// Called when the game starts or when spawned
@@ -96,10 +99,10 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	UInstancedStaticMeshComponent* InstancedStaticMeshComponent {nullptr};
 
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly)
 	UGridStateComponent* GridStateComponent {nullptr};
 
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly)
 	UGridVisualComponent* GridVisualComponent {nullptr};
 
 	UPROPERTY(EditAnywhere, Category = "Grid Generation")
@@ -119,4 +122,7 @@ private:
 	FVector2f BottomLeft {0};
 	FVector2f TopRight {0};
 	FVector2D Dimension;
+
+	UPROPERTY()
+	UGridAction* CurrentGridAction {nullptr};
 };

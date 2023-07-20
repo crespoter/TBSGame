@@ -6,6 +6,11 @@ DECLARE_LOG_CATEGORY_EXTERN(LogGridSystems, Log, All);
 class AHeroCharacter;
 class ATBSCharacter;
 
+namespace GridConstants
+{
+	const FIntPoint InvalidIndex = FIntPoint{-1};
+};
+
 
 // TODO: Move GamePhase to a new Type file
 UENUM()
@@ -15,6 +20,16 @@ enum class EGamePhase : uint8
 	Deployment,
 	Battle,
 	Max
+};
+
+UENUM()
+enum class EGridDirection : uint8
+{
+	Up,
+	Down,
+	Left,
+	Right,
+	None
 };
 
 

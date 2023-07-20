@@ -2,6 +2,7 @@
 #include "GridActor.h"
 
 #include "EngineUtils.h"
+#include "Actions/Deploy/DeployGridAction.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "GridSystem/GridSystemTypes.h"
 #include "GridSystem/GridBlockerVolume/GridBlockerVolume.h"
@@ -72,6 +73,15 @@ void AGridActor::UpdateGridState(const FIntPoint& GridIndex, const EGridInstance
 	GridStateComponent->AddGridState(GridIndex, GridInstanceState);
 }
 
+const UGridStateComponent* AGridActor::GetGridStateComponent() const
+{
+	return GridStateComponent;
+}
+
+UGridStateComponent* AGridActor::GetGridStateComponent()
+{
+	return GridStateComponent;
+}
 
 
 void AGridActor::SetGridAsActive(const FIntPoint& Index)
@@ -318,23 +328,39 @@ void AGridActor::HandleHoverOnGrid(const FIntPoint& GridIndex)
 
 void AGridActor::HandleGridSelect(const FIntPoint& Index)
 {
-	FGridState GridInstanceState;
-	const bool bIsFound = GridStateComponent->GetGridUnitState(Index, GridInstanceState);
-	if (!bIsFound)
+
+	if (CurrentGridAction)
 	{
-		return;
-	}
-	if (IsGridUnitSelectable(Index, &GridInstanceState))
-	{
-		const EGamePhase GamePhase = GameState->GetCurrentGamePhase();
-		switch(GamePhase)
+		if (CurrentGridAction->CheckIfValidToExecute(Index))
 		{
-		case EGamePhase::Deployment:
+			CurrentGridAction->HandleGridSelect(Index);
+		}
+	}
+	else
+	{
+		FGridState GridInstanceState;
+		const bool bIsFound = GridStateComponent->GetGridUnitState(Index, GridInstanceState);
+		if (!bIsFound)
+		{
+			return;
+		}
+		if (IsGridUnitSelectable(Index, &GridInstanceState))
+		{
+			const EGamePhase GamePhase = GameState->GetCurrentGamePhase();
+			switch(GamePhase)
 			{
-				SetGridAsActive(Index);
-				break;
+			case EGamePhase::Deployment:
+				{
+					SetGridAsActive(Index);
+					UGridDeployAction* DeployAction = NewObject<UGridDeployAction>();
+					if (DeployAction->Initialize(this, GridInstanceState.OccupyingUnit, Index))
+					{
+						CurrentGridAction = DeployAction;
+					}
+					break;
+				}
+			default: ;
 			}
-		default: ;
 		}
 	}
 }
