@@ -2,9 +2,8 @@
 
 DEFINE_LOG_CATEGORY(LogGridSystems);
 
-FGridState::FGridState(const EGridInstanceType InstanceType, const EGridInstanceActivityType ActivityType,
-	const uint16 MeshInstanceIndex) :
-	bIsUnitRendered(InstanceType != EGridInstanceType::None)
+FGridState::FGridState(const EGridInstanceType InstanceType, const EGridInstanceActivityType ActivityType)
+	: InstanceType(InstanceType), ActivityType(ActivityType)
 {
 }
 
@@ -22,7 +21,6 @@ EGridInstanceActivityType FGridState::GetActivityType() const
 void FGridState::SetInstanceType(const EGridInstanceType InInstanceType)
 {
 	InstanceType = InInstanceType;
-	bIsUnitRendered = InstanceType != EGridInstanceType::None;
 }
 
 void FGridState::SetActivityType(const EGridInstanceActivityType InActivityType)
@@ -30,11 +28,16 @@ void FGridState::SetActivityType(const EGridInstanceActivityType InActivityType)
 	ActivityType = InActivityType;
 }
 
+bool FGridState::IsRendered() const
+{
+	return InstanceType != EGridInstanceType::None;
+}
+
 bool FGridState::IsVisuallySameWith(const FGridState& OtherGridState) const
 {
 	return GridAccessState == OtherGridState.GridAccessState &&
 		(FMath::Abs(Height - OtherGridState.Height) < 0.1) &&
-		bIsUnitRendered == OtherGridState.bIsUnitRendered &&
+		IsRendered() == OtherGridState.IsRendered() &&
 		InstanceType == OtherGridState.InstanceType &&
 		ActivityType == OtherGridState.ActivityType;
 }

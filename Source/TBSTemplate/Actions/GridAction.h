@@ -3,30 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Character/TBSCharacter.h"
+#include "GridSystem/GridSystemTypes.h"
 #include "GridAction.generated.h"
 
 class AGridActor;
 class ATBSCharacter;
 
-UENUM()
-enum class EActionType
-{
-	None,
-	Deploy,
-	Move,
-	Skill
-};
-
-UENUM()
-enum class EActionExecutionStatus
-{
-	Success,
-	Failed,
-	Cancelled
-};
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGridActionFinishedDelegate, EActionExecutionStatus, ExecutionStatus);
 
 /**
  * Action is any activity done by the player on the grid.

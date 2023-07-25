@@ -25,8 +25,6 @@ public:
 	virtual bool Initialize(AGridActor* InGridActor, ATBSCharacter* InInstigator,
 		const FIntPoint& InInstigatingIndex) override;
 
-
-
 private:
 	UFUNCTION()
 	void DeployFighter();

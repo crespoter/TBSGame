@@ -79,12 +79,6 @@ public:
 	FORCEINLINE UGridStateComponent* GetGridStateComponent();
 
 
-private:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-
-
 	void SetGridAsActive(const FIntPoint& Index);
 
 	void SetGridAsDefault(const FIntPoint& Index);
@@ -93,8 +87,14 @@ private:
 
 	void ResetHoveringGrid();
 	
+private:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+	
 	void CalculateDimensions();
 
+	UFUNCTION()
+	void OnActionFinished(const EActionExecutionStatus ExecutionStatus);
 
 	UPROPERTY(EditDefaultsOnly)
 	UInstancedStaticMeshComponent* InstancedStaticMeshComponent {nullptr};

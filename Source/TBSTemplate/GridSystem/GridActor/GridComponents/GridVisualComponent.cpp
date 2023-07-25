@@ -80,8 +80,7 @@ void UGridVisualComponent::DrawDebugGrid()
 			
 			GridStateComponent->AddGridState(FIntPoint(i, j), {
 				EGridInstanceType::DebugGrid,
-				EGridInstanceActivityType::None,
-				MeshInstanceIndex
+				EGridInstanceActivityType::None
 			});
 			MeshInstanceMap.Emplace(FIntPoint(i,j), MeshInstanceIndex);
 			MeshInstanceIndex++;

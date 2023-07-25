@@ -3,6 +3,7 @@
 
 #include "Actions/Deploy/DeployGridAction.h"
 
+#include "Character/TBSCharacter.h"
 #include "GridSystem/GridActor/GridActor.h"
 #include "GridSystem/GridActor/GridComponents/GridStateComponent.h"
 
@@ -22,8 +23,12 @@ bool UGridDeployAction::CheckIfValidToExecute(const FIntPoint& TargetIndex) cons
 {
 	// Invalid if tile is already occupied.
 	FGridState GridState;
-	const bool bIsFound = GridStateComponent->GetGridUnitState(TargetIndex, GridState);
-	return bIsFound && GridState.OccupyingUnit == nullptr;
+	bool bCanExecute = GridStateComponent->GetGridUnitState(TargetIndex, GridState);
+
+	// TODO: Allow units to swap
+	bCanExecute &= GridState.OccupyingUnit == nullptr;
+	bCanExecute &= GridState.GetInstanceType() == EGridInstanceType::Deployment;
+	return bCanExecute;
 }
 
 
@@ -33,7 +38,6 @@ void UGridDeployAction::Cancel()
 	if (SelectedIndex != GridConstants::InvalidIndex)
 	{
 		// When cancelling if the direction choice is active, only cancel the direction prompt.
-		// TODO: Remove the direction widget
 		SelectedIndex = GridConstants::InvalidIndex;
 	}
 	else
@@ -45,8 +49,8 @@ void UGridDeployAction::Cancel()
 void UGridDeployAction::Execute()
 {
 	Super::Execute();
-	// TODO: Create direction widget and listen for direction input which would then call move fighter. hard coded front for now
 	Direction = EGridDirection::Up;
+	GetGridActor()->SetGridAsActive(SelectedIndex);
 	DeployFighter();
 }
 
@@ -60,6 +64,7 @@ bool UGridDeployAction::Initialize(AGridActor* InGridActor, ATBSCharacter* InIns
 		GridStateComponent =  GetGridActor()->GetGridStateComponent();
 		check(GridStateComponent);
 		check(GetInstigator());
+		GetGridActor()->SetGridAsActive(GetInstigatingIndex());
 	}
 	return bIsParentInitialized;
 }
@@ -67,7 +72,7 @@ bool UGridDeployAction::Initialize(AGridActor* InGridActor, ATBSCharacter* InIns
 void UGridDeployAction::DeployFighter()
 {
 	// Update SourceGrid to remove character. Ignore if source grid is not set
-	if (GetInstigatingIndex() == GridConstants::InvalidIndex)
+	if (GetInstigatingIndex() != GridConstants::InvalidIndex)
 	{
 		FGridState SourceGridState;
 		const bool bIsSourceFound = GridStateComponent->GetGridUnitState(GetInstigatingIndex(), SourceGridState);
@@ -75,18 +80,19 @@ void UGridDeployAction::DeployFighter()
 		SourceGridState.OccupyingUnit = nullptr;
 		GridStateComponent->AddGridState(GetInstigatingIndex(), SourceGridState);
 	}
+	GetGridActor()->ResetActiveGrid();
 	FGridState TargetGridState;
 	const bool bIsTargetFound = GridStateComponent->GetGridUnitState(SelectedIndex, TargetGridState);
 	check(bIsTargetFound);
-	TargetGridState.OccupyingUnit = nullptr;
-	GridStateComponent->AddGridState(GetInstigatingIndex(), TargetGridState);
+	TargetGridState.OccupyingUnit = GetInstigator();
+	GridStateComponent->AddGridState(SelectedIndex, TargetGridState);
 	GetInstigator()->DeployCharacterOnGrid(GetGridActor(), GetInstigatingIndex(), SelectedIndex);
+	FinishExecution(EActionExecutionStatus::Success);
 }
 
 void UGridDeployAction::HandleGridSelect(const FIntPoint& GridIndex)
 {
 	Super::HandleGridSelect(GridIndex);
 	SelectedIndex = GridIndex;
-	GridStateComponent->SetActiveGridIndex(GridIndex);
 	Execute();
 }

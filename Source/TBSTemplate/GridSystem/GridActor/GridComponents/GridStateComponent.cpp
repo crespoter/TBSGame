@@ -91,12 +91,12 @@ void UGridStateComponent::AddGridState(const FIntPoint& Index, const FGridState&
 	
 	if (CurrentGridState)
 	{
-		if (CurrentGridState->bIsUnitRendered && !GridInstanceState.bIsUnitRendered)
+		if (CurrentGridState->IsRendered() && !GridInstanceState.IsRendered())
 		{
 			RenderedGridIndexes.Remove(Index);
 			bShouldRender = true;
 		}
-		else if (!CurrentGridState->bIsUnitRendered && GridInstanceState.bIsUnitRendered)
+		else if (!CurrentGridState->IsRendered() && GridInstanceState.IsRendered())
 		{
 			RenderedGridIndexes.Add(Index);
 			bShouldRender = true;
@@ -115,8 +115,7 @@ void UGridStateComponent::AddGridState(const FIntPoint& Index, const FGridState&
 		GridStateMap.Emplace(Index, GridInstanceState);
 		bShouldRender = true;
 	}
-	// TODO: Remove
-	// bShouldRender = true;
+
 	if (bShouldRender)
 	{
 		GridVisualStateUpdatedDelegate.Broadcast(GridInstanceState, Index, Op);
@@ -131,7 +130,7 @@ void UGridStateComponent::SetVisibleGridUnitsAsHidden()
 	{
 		FGridState* GridState = GridStateMap.Find(Index);
 		check(GridState);
-		if (GridState->bIsUnitRendered)
+		if (GridState->IsRendered())
 		{
 			GridState->SetInstanceType(EGridInstanceType::None);
 			GridUpdatedDelegate.Broadcast(*GridState, Index, EUpdateOpType::Updated);

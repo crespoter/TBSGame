@@ -109,12 +109,13 @@ struct TBSTEMPLATE_API FGridState
 
 	FGridState() = default;
 	
-	FGridState(EGridInstanceType InstanceType, EGridInstanceActivityType ActivityType, uint16 MeshInstanceIndex);
+	FGridState(EGridInstanceType InstanceType, EGridInstanceActivityType ActivityType);
 	
 	FORCEINLINE EGridInstanceType GetInstanceType() const;
 	FORCEINLINE EGridInstanceActivityType GetActivityType() const;
 	FORCEINLINE void SetInstanceType(const EGridInstanceType InInstanceType);
 	FORCEINLINE void SetActivityType(const EGridInstanceActivityType InActivityType);
+	FORCEINLINE bool IsRendered() const;
 
 	bool IsVisuallySameWith(const FGridState& OtherGridState) const;
 	
@@ -122,8 +123,6 @@ struct TBSTEMPLATE_API FGridState
 
 	float Height {0.0f};
 	
-	bool bIsUnitRendered {false};
-
 	UPROPERTY()
 	ATBSCharacter* OccupyingUnit {nullptr};
 
@@ -146,3 +145,26 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FGridChangedDelegate,
 	const FIntPoint&, Index,
 	const EUpdateOpType, UpdationOperation
 );
+
+
+
+// Grid Actions
+
+UENUM()
+enum class EActionType
+{
+	None,
+	Deploy,
+	Move,
+	Skill
+};
+
+UENUM()
+enum class EActionExecutionStatus
+{
+	Success,
+	Failed,
+	Cancelled
+};
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGridActionFinishedDelegate, EActionExecutionStatus, ExecutionStatus);

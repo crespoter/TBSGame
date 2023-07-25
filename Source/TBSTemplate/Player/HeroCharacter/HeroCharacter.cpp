@@ -6,13 +6,14 @@
 #include "AI/HeroAIController/HeroAIController.h"
 #include "Game/TBSGameState.h"
 #include "GameFramework/PawnMovementComponent.h"
+#include "Components/WidgetComponent.h"
+
 
 
 // Sets default values
 AHeroCharacter::AHeroCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
 }
 
 // Called when the game starts or when spawned
@@ -30,11 +31,4 @@ void AHeroCharacter::BeginPlay()
 void AHeroCharacter::OnGamePhaseChanged(EGamePhase NewGamePhase)
 {
 	GetMovementComponent()->StopMovementImmediately();
-}
-
-// Called every frame
-void AHeroCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-	
 }

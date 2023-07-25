@@ -59,6 +59,11 @@ void AGridActor::CalculateDimensions()
 	Dimension.Y = FMath::Floor(Bounds.Y / GridStateComponent->GetGridUnitSize().Y);
 }
 
+void AGridActor::OnActionFinished(const EActionExecutionStatus ExecutionStatus)
+{
+	CurrentGridAction = nullptr;
+}
+
 void AGridActor::UpdateGridState(const FIntPoint& GridIndex, const EGridInstanceType InstanceType, const EGridInstanceActivityType ActivityType)
 {
 
@@ -126,7 +131,7 @@ void AGridActor::ResetActiveGrid()
 
 
 	GridInstanceState.SetActivityType(EGridInstanceActivityType::None);
-
+	
 	GridStateComponent->AddGridState(ActiveGridIndex, GridInstanceState);
 	UpdateGridState(ActiveGridIndex, GridInstanceState.GetInstanceType(),
 		GridInstanceState.GetActivityType());
@@ -309,21 +314,18 @@ void AGridActor::ActivateDeploymentGrid(const ACombatSituation* CurrentCombatSit
 
 void AGridActor::HandleHoverOnGrid(const FIntPoint& GridIndex)
 {
-	
 	if (GridStateComponent->GetHoveringGridIndex() == GridIndex)
 	{
 		return;
 	}
-	
+	ResetHoveringGrid();
+
 	if (!IsGridIndexHoverable(GridIndex) || GridIndex == GridStateComponent->GetActiveGridIndex())
 	{
-		ResetHoveringGrid();
 		return;
 	}
-	
-	ResetHoveringGrid();
+	UpdateGridState(GridIndex, EGridInstanceType::Deployment, EGridInstanceActivityType::Hover);
 	GridStateComponent->SetHoveringGridIndex(GridIndex);
-	UpdateGridState(GridIndex, EGridInstanceType::Deployment, EGridInstanceActivityType::Hover);				
 }
 
 void AGridActor::HandleGridSelect(const FIntPoint& Index)
@@ -351,11 +353,11 @@ void AGridActor::HandleGridSelect(const FIntPoint& Index)
 			{
 			case EGamePhase::Deployment:
 				{
-					SetGridAsActive(Index);
 					UGridDeployAction* DeployAction = NewObject<UGridDeployAction>();
 					if (DeployAction->Initialize(this, GridInstanceState.OccupyingUnit, Index))
 					{
 						CurrentGridAction = DeployAction;
+						CurrentGridAction->ActionFinishedDelegate.AddDynamic(this, &ThisClass::AGridActor::OnActionFinished);
 					}
 					break;
 				}

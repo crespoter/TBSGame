@@ -16,6 +16,7 @@ class UInputMappingContext;
 class UInputAction;
 class AHeroAIController;
 class ATBSGameState;
+class UWidgetComponent;
 
 
 // Character class for all playable and enemy characters
@@ -27,8 +28,6 @@ class TBSTEMPLATE_API AHeroCharacter : public ATBSCharacter
 public:
 	// Sets default values for this character's properties
 	AHeroCharacter();
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
 protected:
 	// Called when the game starts or when spawned
