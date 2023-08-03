@@ -5,7 +5,6 @@
 
 #include "EngineUtils.h"
 #include "Components/BoxComponent.h"
-#include "GridSystem/GridActor/GridActor.h"
 
 ADeploymentZone::ADeploymentZone()
 {

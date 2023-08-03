@@ -48,7 +48,6 @@ void UGridVisualComponent::DrawDebugGrid()
 
 			FGridColorData GridColorData;
 			GridColorData.BackgroundColor = FColor(0, 0, 0, 0);
-			// TODO: Use debug color info from data file instead of hardcoded colors
 			if (!bIsGridStateFound)
 			{
 				GridColorData.EdgeColor = FColor(255, 0 ,0, 255);
@@ -79,7 +78,7 @@ void UGridVisualComponent::DrawDebugGrid()
 			SetInstancedMeshGridColors(MeshInstanceIndex, GridColorData.EdgeColor, GridColorData.BackgroundColor);
 			
 			GridStateComponent->AddGridState(FIntPoint(i, j), {
-				EGridInstanceType::DebugGrid,
+				EGridInstanceType::None,
 				EGridInstanceActivityType::None
 			});
 			MeshInstanceMap.Emplace(FIntPoint(i,j), MeshInstanceIndex);

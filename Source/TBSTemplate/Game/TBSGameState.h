@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameStateBase.h"
-#include "GridSystem/GridSystemTypes.h"
+#include "TBSTemplate/Game/TBSTypes.h"
 #include "TBSGameState.generated.h"
 
 class UGridConfigurationActorComponent;
@@ -12,7 +12,8 @@ class AGridActor;
 class ATBSCameraPawnBase;
 class AHeroCharacter;
 class ACombatSituation;
-
+class ATBSCharacter;
+class ATBSPlayerController;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FonGamePhaseChanged, EGamePhase, GamePhase);
 
@@ -29,18 +30,27 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void StartDeploymentPhase(ACombatSituation* CombatSituation);
 	
-
+	UFUNCTION(BlueprintCallable)
+	void StartBattlePhase();
+	
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE EGamePhase GetCurrentGamePhase() const;
 
-
+	UFUNCTION()
+	void OnTurnChanged();
+	
 	FORCEINLINE AHeroCharacter* GetMainCharacter() const;
 	
 	UFUNCTION(BlueprintCallable)
-	FORCEINLINE AGridActor* GetGridActor() const
-	{
-		return GridActor;
-	}
+	FORCEINLINE AGridActor* GetActiveGridActor() const;
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE ACombatSituation* GetCurrentActiveCombatSituation() const;
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE TArray<ATBSCharacter*> GetPlayerParty() const;
+	FORCEINLINE const TArray<ATBSCharacter*>* GetPlayerPartyRef() const;
+	FORCEINLINE TArray<ATBSCharacter*>* GetPlayerPartyRef();
 
 	// Properties
 	
@@ -50,15 +60,20 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-protected:
 	EGamePhase CurrentPhase {EGamePhase::Exploration};
 	
 	UPROPERTY()
-	AGridActor* GridActor {nullptr};
+	AGridActor* ActiveGridActor {nullptr};
 
 	UPROPERTY()
 	AHeroCharacter* MainCharacter {nullptr};
 	
 	UPROPERTY()
 	ACombatSituation* CurrentActiveCombatSituation {nullptr};
+
+	UPROPERTY()
+	TArray<ATBSCharacter*> PlayerParty;
+
+	UPROPERTY()
+	ATBSPlayerController* PlayerController {nullptr};
 };

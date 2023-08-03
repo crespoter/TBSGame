@@ -10,7 +10,6 @@
 #include "EnhancedInput/Public/InputMappingContext.h"
 #include "EnhancedInput/Public/EnhancedInputSubsystems.h"
 #include "EnhancedInput/Public/EnhancedInputComponent.h"
-#include "GameFramework/PawnMovementComponent.h"
 #include "GridSystem/GridActor/GridActor.h"
 #include "Player/HeroCharacter/HeroCharacter.h"
 
@@ -49,11 +48,6 @@ void ATBSCameraPawnBase::BeginPlay()
 	check(CachedGameState);
 
 	CachedGameState->GamePhaseChangedEvent.AddDynamic(this, &ATBSCameraPawnBase::HandleGamePhaseChanged);
-
-	GridActor = CachedGameState->GetGridActor();
-
-	check(GridActor);
-	
 }
 
 void ATBSCameraPawnBase::HandleCameraMovementInputEvent(const FInputActionValue& ActionValue)
@@ -147,6 +141,10 @@ void ATBSCameraPawnBase::HandleHover()
 void ATBSCameraPawnBase::HandleGamePhaseChanged(EGamePhase NewGamePhase)
 {
 	CurrentGamePhase = NewGamePhase;
+	if (NewGamePhase == EGamePhase::Deployment)
+	{
+		GridActor = CachedGameState->GetActiveGridActor();
+	}
 }
 
 // Called every frame

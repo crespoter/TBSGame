@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Game/TBSTypes.h"
 #include "CombatSituation.generated.h"
 
 class UBoxComponent;
@@ -11,8 +12,11 @@ class AGridActor;
 class AHeroCharacter;
 class ATBSGameState;
 class ADeploymentZone;
+class ATBSCharacter;
 
-
+/**
+ * The brains of a situation. Controls the rules of a particular engagement
+*/
 UCLASS()
 class TBSTEMPLATE_API ACombatSituation : public AActor
 {
@@ -31,12 +35,26 @@ public:
 	void StartCombatSituation(ADeploymentZone* DeploymentZone);
 
 	UFUNCTION()
-	FORCEINLINE ADeploymentZone* GetDeploymentZone() const; 
+	FORCEINLINE ADeploymentZone* GetDeploymentZone() const;
+
+	UFUNCTION()
+	FORCEINLINE uint8 GetCurrentTurnTeamId() const;
 	
-	UPROPERTY(EditInstanceOnly, Category = "Enemies")
+	UPROPERTY(EditInstanceOnly, Category = "Battle")
 	FName NPCCombatantId;
+
+	UFUNCTION()
+	FORCEINLINE AGridActor* GetGridActor() const;
+
+	UPROPERTY()
+	FMulticastDelegate NewTurnDelegate;
+private:
+	UFUNCTION()
+	void OnGamePhaseChanged(EGamePhase GamePhase);
+
+	UFUNCTION()
+	void TriggerTurn(const bool bIsNextTurn);
 	
-protected:
 	// TODO: Change to TBSCharacter, auto populate based on tags
 	// Participants in the order of their speed
 	UPROPERTY()
@@ -49,4 +67,13 @@ protected:
 	ADeploymentZone* DeploymentZone {nullptr};
 	
 	bool bIsActive {false};
+
+	UPROPERTY(EditInstanceOnly, Category="Grid")
+	AGridActor* GridActor {nullptr};
+
+	TMap<uint8, TArray<ATBSCharacter*>> TeamUnitMap;
+
+	TArray<uint8> ParticipatingTeams;
+
+	uint8 CurrentTurnTeamIndex {0};
 };

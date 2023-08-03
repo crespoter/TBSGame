@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "GridSystem/GridSystemTypes.h"
+#include "Game/TBSTypes.h"
 #include "GridActor.generated.h"
 
 class ATBSGameState;
@@ -86,7 +87,9 @@ public:
 	void ResetActiveGrid();
 
 	void ResetHoveringGrid();
-	
+
+	void StartGridAction(const FIntPoint& GridIndex, ATBSCharacter* InstigatingCharacter, UGridAction* GridAction);
+
 private:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -95,6 +98,9 @@ private:
 
 	UFUNCTION()
 	void OnActionFinished(const EActionExecutionStatus ExecutionStatus);
+
+	UFUNCTION()
+	void OnGamePhaseChanged(const EGamePhase NewGamePhase);
 
 	UPROPERTY(EditDefaultsOnly)
 	UInstancedStaticMeshComponent* InstancedStaticMeshComponent {nullptr};

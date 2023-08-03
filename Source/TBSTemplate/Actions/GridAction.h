@@ -29,13 +29,13 @@ public:
 	virtual void Cancel();
 	virtual void Execute();
 	
-
-	
 	virtual bool Initialize(AGridActor* InGridActor,
 		ATBSCharacter* InInstigator,
 		const FIntPoint& InInstigatingIndex);
 
 	virtual void HandleGridSelect(const FIntPoint& GridIndex);
+
+	virtual bool IsIndexHoverable(const FIntPoint& Index) const;
 
 	UPROPERTY()
 	FGridActionFinishedDelegate ActionFinishedDelegate;

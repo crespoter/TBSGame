@@ -11,28 +11,6 @@ namespace GridConstants
 	const FIntPoint InvalidIndex = FIntPoint{-1};
 };
 
-
-// TODO: Move GamePhase to a new Type file
-UENUM()
-enum class EGamePhase : uint8
-{
-	Exploration,
-	Deployment,
-	Battle,
-	Max
-};
-
-UENUM()
-enum class EGridDirection : uint8
-{
-	Up,
-	Down,
-	Left,
-	Right,
-	None
-};
-
-
 UENUM(BlueprintType)
 enum class EGridAccessState : uint8
 {
@@ -47,7 +25,7 @@ UENUM()
 enum class EGridInstanceType
 {
 	Deployment,
-	DebugGrid,
+	Movement,
 	None
 };
 

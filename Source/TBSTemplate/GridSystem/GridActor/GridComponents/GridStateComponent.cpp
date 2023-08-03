@@ -87,7 +87,7 @@ void UGridStateComponent::AddGridState(const FIntPoint& Index, const FGridState&
 	FGridState* CurrentGridState = GridStateMap.Find(Index);
 	EUpdateOpType Op;
 
-	bool bShouldRender = false;
+	bool bShouldRender;
 	
 	if (CurrentGridState)
 	{

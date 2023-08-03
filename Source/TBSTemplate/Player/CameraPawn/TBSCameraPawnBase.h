@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
 #include "GameFramework/Pawn.h"
-#include "GridSystem/GridSystemTypes.h"
+#include "Game/TBSTypes.h"
 #include "TBSCameraPawnBase.generated.h"
 
 class UInputAction;
@@ -48,7 +48,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
+	
 	UFUNCTION()
 	void HandleCameraMovementInputEvent(const FInputActionValue& ActionValue);
 

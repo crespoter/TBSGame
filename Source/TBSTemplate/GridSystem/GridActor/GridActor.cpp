@@ -40,12 +40,15 @@ AGridActor::AGridActor()
 
 void AGridActor::BeginPlay()
 {
+	// TODO: Generate grid as a Call in editor function. This way the data can be package into build rather than being generated everytime.
+
 	Super::BeginPlay();
 	check(bIsGridGenerated);
 	ClearGridUnits();
 	GenerateGrid();
 	GameState = Cast<ATBSGameState>(GetWorld()->GetGameState());
 	check(GameState);
+	GameState->GamePhaseChangedEvent.AddDynamic(this, &ThisClass::AGridActor::OnGamePhaseChanged);
 }
 
 
@@ -62,6 +65,20 @@ void AGridActor::CalculateDimensions()
 void AGridActor::OnActionFinished(const EActionExecutionStatus ExecutionStatus)
 {
 	CurrentGridAction = nullptr;
+}
+
+void AGridActor::OnGamePhaseChanged(const EGamePhase NewGamePhase)
+{
+	switch(NewGamePhase)
+	{
+	case EGamePhase::Deployment:
+		ActivateDeploymentGrid(GameState->GetCurrentActiveCombatSituation());
+		break;
+	case EGamePhase::Battle:
+		GridStateComponent->SetVisibleGridUnitsAsHidden();
+		break;
+	default:;
+	}
 }
 
 void AGridActor::UpdateGridState(const FIntPoint& GridIndex, const EGridInstanceType InstanceType, const EGridInstanceActivityType ActivityType)
@@ -156,6 +173,13 @@ void AGridActor::ResetHoveringGrid()
 		GridInstanceState.GetActivityType());
 
 	GridStateComponent->SetHoveringGridIndex({-1, -1 });
+}
+
+void AGridActor::StartGridAction(const FIntPoint& GridIndex, ATBSCharacter* InstigatingCharacter, UGridAction* GridAction)
+{
+	CurrentGridAction = GridAction;
+	check(CurrentGridAction);
+	CurrentGridAction->Initialize(this, InstigatingCharacter, GridIndex);
 }
 
 void AGridActor::GenerateGrid()
@@ -318,14 +342,16 @@ void AGridActor::HandleHoverOnGrid(const FIntPoint& GridIndex)
 	{
 		return;
 	}
-	ResetHoveringGrid();
-
-	if (!IsGridIndexHoverable(GridIndex) || GridIndex == GridStateComponent->GetActiveGridIndex())
+	if (GameState->GetCurrentGamePhase() == EGamePhase::Deployment)
 	{
-		return;
+		ResetHoveringGrid();
+		if (!IsGridIndexHoverable(GridIndex) || GridIndex == GridStateComponent->GetActiveGridIndex())
+		{
+			return;
+		}
+		UpdateGridState(GridIndex, EGridInstanceType::Deployment, EGridInstanceActivityType::Hover);
+		GridStateComponent->SetHoveringGridIndex(GridIndex);
 	}
-	UpdateGridState(GridIndex, EGridInstanceType::Deployment, EGridInstanceActivityType::Hover);
-	GridStateComponent->SetHoveringGridIndex(GridIndex);
 }
 
 void AGridActor::HandleGridSelect(const FIntPoint& Index)
@@ -411,16 +437,24 @@ bool AGridActor::IsGridIndexHoverable(const FIntPoint& Index)
 	const EGamePhase GamePhase = GameState->GetCurrentGamePhase();
 
 	
-	
-	switch(GamePhase)
+	if (CurrentGridAction)
 	{
-	case EGamePhase::Deployment:
+		bCanBeHovered = CurrentGridAction->IsIndexHoverable(Index);	
+	}
+	else
+	{
+		switch(GamePhase)
 		{
-			bCanBeHovered = GridInstanceState.GetInstanceType() == EGridInstanceType::Deployment;
-			// TODO: Also check if action supports.
-			break;
+		case EGamePhase::Deployment:
+			{
+				// Allow a deployment unit with party unit to be hoverable
+				bCanBeHovered = GridInstanceState.GetInstanceType() == EGridInstanceType::Deployment
+								&& GridInstanceState.OccupyingUnit != nullptr;
+				// TODO: Also check if occupying unit is controllable by player character.
+				break;
+			}
+		default:;
 		}
-	default:;
 	}
 	return bCanBeHovered;
 }

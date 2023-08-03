@@ -25,17 +25,17 @@ public:
 	virtual bool Initialize(AGridActor* InGridActor, ATBSCharacter* InInstigator,
 		const FIntPoint& InInstigatingIndex) override;
 
+	virtual void HandleGridSelect(const FIntPoint& GridIndex) override;
+	
+	virtual bool IsIndexHoverable(const FIntPoint& Index) const override;
+
 private:
 	UFUNCTION()
 	void DeployFighter();
-public:
-	virtual void HandleGridSelect(const FIntPoint& GridIndex) override;
-private:
+	
 	UPROPERTY()
 	UGridStateComponent* GridStateComponent {nullptr};
-
-	EGridDirection Direction {EGridDirection::Up};
-
+	
 	FIntPoint SelectedIndex {GridConstants::InvalidIndex};
 };
 

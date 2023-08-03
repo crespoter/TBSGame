@@ -13,7 +13,7 @@ bool UGridDeployAction::CheckIfValidToInitialize(AGridActor* InGridActor,
 {
 	if (InInstigator != nullptr)
 	{
-		// TODO: Check if the character is of the same team.
+		// TODO: Check if the occupying character can be deployed by player
 		return true;
 	}
 	return false;
@@ -49,7 +49,6 @@ void UGridDeployAction::Cancel()
 void UGridDeployAction::Execute()
 {
 	Super::Execute();
-	Direction = EGridDirection::Up;
 	GetGridActor()->SetGridAsActive(SelectedIndex);
 	DeployFighter();
 }
@@ -95,4 +94,12 @@ void UGridDeployAction::HandleGridSelect(const FIntPoint& GridIndex)
 	Super::HandleGridSelect(GridIndex);
 	SelectedIndex = GridIndex;
 	Execute();
+}
+
+bool UGridDeployAction::IsIndexHoverable(const FIntPoint& Index) const
+{
+	FGridState GridState;
+	GridStateComponent->GetGridUnitState(Index, GridState);
+	return GridState.GetInstanceType() == EGridInstanceType::Deployment
+		&& GridState.OccupyingUnit == nullptr;
 }

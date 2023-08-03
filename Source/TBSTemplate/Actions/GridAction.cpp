@@ -41,6 +41,11 @@ void UGridAction::HandleGridSelect(const FIntPoint& GridIndex)
 {
 }
 
+bool UGridAction::IsIndexHoverable(const FIntPoint& Index) const
+{
+	return true;
+}
+
 void UGridAction::FinishExecution(const EActionExecutionStatus ExecutionStatus)
 {
 	ActionFinishedDelegate.Broadcast(ExecutionStatus);
