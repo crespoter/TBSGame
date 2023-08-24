@@ -3,6 +3,9 @@
 
 #include "Character/TBSCharacter.h"
 
+#include "AI/HeroAIController/HeroAIController.h"
+#include "GameFramework/PawnMovementComponent.h"
+#include "Game/TBSGameState.h"
 #include "GridSystem/GridActor/GridActor.h"
 
 // Sets default values
@@ -22,10 +25,16 @@ void ATBSCharacter::DeployCharacterOnGrid(AGridActor* GridActor, const FIntPoint
 	// TODO: Add effects on target index
 }
 
+
 // Called when the game starts or when spawned
 void ATBSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	AIController = GetWorld()->SpawnActor<AHeroAIController>(AHeroAIController::StaticClass());
+	AIController->Possess(this);
+	GameState = Cast<ATBSGameState>(GetWorld()->GetGameState());
+	check(GameState);
+	GameState->GamePhaseChangedEvent.AddDynamic(this, &ThisClass::OnGamePhaseChanged);
 	
 }
 
@@ -43,3 +52,13 @@ void ATBSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 }
 
+
+void ATBSCharacter::OnGamePhaseChanged(const EGamePhase NewGamePhase)
+{
+	GetMovementComponent()->StopMovementImmediately();
+}
+
+void ATBSCharacter::MoveToLocation(const FVector TargetLocation)
+{
+	AIController->MoveToLocation(TargetLocation);
+}

@@ -37,9 +37,7 @@ public:
 	FIntPoint GetIndexFromLocation(const FVector2f& GridLocation) const;
 
 	FIntPoint GetIndexFromLocation(const FVector& GridLocation) const;
-
-	void SetCharacterUnitAtIndex(const FIntPoint& GridIndex, ATBSCharacter* Character);
-
+	
 	UFUNCTION(Exec, CallInEditor, Category = "Grid")
 	void DrawDebugGrid();
 
@@ -72,21 +70,11 @@ public:
 	bool IsGridIndexHoverable(const FIntPoint& Index);
 
 	FORCEINLINE FVector2D GetDimensions() const;
-
-	void UpdateGridState(const FIntPoint& GridIndex, EGridInstanceType InstanceType, EGridInstanceActivityType ActivityType);
-
+	
 	FORCEINLINE const UGridStateComponent* GetGridStateComponent() const;
 
 	FORCEINLINE UGridStateComponent* GetGridStateComponent();
-
-
-	void SetGridAsActive(const FIntPoint& Index);
-
-	void SetGridAsDefault(const FIntPoint& Index);
-
-	void ResetActiveGrid();
-
-	void ResetHoveringGrid();
+	
 
 	void StartGridAction(const FIntPoint& GridIndex, ATBSCharacter* InstigatingCharacter, UGridAction* GridAction);
 

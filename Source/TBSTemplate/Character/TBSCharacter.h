@@ -8,6 +8,10 @@
 
 class AGridActor;
 
+enum class EGamePhase : uint8;
+class AHeroAIController;
+class ATBSGameState;
+
 UCLASS()
 class TBSTEMPLATE_API ATBSCharacter : public ACharacter
 {
@@ -34,6 +38,19 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+
+	
+	UFUNCTION()
+	void OnGamePhaseChanged(const EGamePhase NewGamePhase);
+
+	UFUNCTION()
+	void MoveToLocation(const FVector TargetLocation);
+
+	UPROPERTY()
+	AHeroAIController* AIController {nullptr};
+
+	UPROPERTY()
+	ATBSGameState* GameState {nullptr};
 
 };

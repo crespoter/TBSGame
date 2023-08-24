@@ -49,7 +49,7 @@ void UGridDeployAction::Cancel()
 void UGridDeployAction::Execute()
 {
 	Super::Execute();
-	GetGridActor()->SetGridAsActive(SelectedIndex);
+	GridStateComponent->SetGridAsActive(SelectedIndex);
 	DeployFighter();
 }
 
@@ -63,7 +63,7 @@ bool UGridDeployAction::Initialize(AGridActor* InGridActor, ATBSCharacter* InIns
 		GridStateComponent =  GetGridActor()->GetGridStateComponent();
 		check(GridStateComponent);
 		check(GetInstigator());
-		GetGridActor()->SetGridAsActive(GetInstigatingIndex());
+		GridStateComponent->SetGridAsActive(GetInstigatingIndex());
 	}
 	return bIsParentInitialized;
 }
@@ -79,7 +79,7 @@ void UGridDeployAction::DeployFighter()
 		SourceGridState.OccupyingUnit = nullptr;
 		GridStateComponent->AddGridState(GetInstigatingIndex(), SourceGridState);
 	}
-	GetGridActor()->ResetActiveGrid();
+	GridStateComponent->ResetActiveGrid();
 	FGridState TargetGridState;
 	const bool bIsTargetFound = GridStateComponent->GetGridUnitState(SelectedIndex, TargetGridState);
 	check(bIsTargetFound);

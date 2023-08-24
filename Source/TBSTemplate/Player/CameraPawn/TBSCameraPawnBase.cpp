@@ -1,7 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Player/CameraPawn/TBSCameraPawnBase.h"
-
 #include "AIController.h"
 #include "Game/TBSGameState.h"
 #include "Player/PlayerController/TBSPlayerController.h"
@@ -71,33 +70,6 @@ void ATBSCameraPawnBase::HandleCameraMovementInputEvent(const FInputActionValue&
 
 void ATBSCameraPawnBase::HandleSelectInputEvent(const FInputActionValue& ActionValue)
 {
-	if (CurrentGamePhase == EGamePhase::Battle || CurrentGamePhase == EGamePhase::Deployment)
-	{
-		FHitResult HitResult;
-		CachedPlayerController->GetHitResultUnderCursor(GridChannel, true, HitResult);
-		if (CurrentGamePhase == EGamePhase::Exploration)
-		{
-			// TODO:
-			/*
-			const AHeroCharacter* Hero = CachedGameState->GetMainCharacter();
-			AAIController* AIController = Cast<AAIController>(Hero->GetController());
-			AIController->MoveToLocation(HitResult.Location);
-			*/
-		}
-		else if (CurrentGamePhase == EGamePhase::Deployment || CurrentGamePhase == EGamePhase::Battle)
-		{
-			const FVector2f HitLocation2D(HitResult.Location.X, HitResult.Location.Y);
-			const FIntPoint GridIndex = GridActor->GetIndexFromLocation(HitLocation2D);
-			if (GridActor->IsValidIndex(GridIndex))
-			{
-				GridActor->HandleGridSelect(GridIndex);
-			}
-		}
-	}
-}
-
-void ATBSCameraPawnBase::HandleExecuteInputEvent(const FInputActionValue& ActionValue)
-{
 	FHitResult HitResult;
 	CachedPlayerController->GetHitResultUnderCursor(GridChannel, true, HitResult);
 	if (HitResult.bBlockingHit)
@@ -108,16 +80,30 @@ void ATBSCameraPawnBase::HandleExecuteInputEvent(const FInputActionValue& Action
 			AAIController* AIController = Cast<AAIController>(Hero->GetController());
 			AIController->MoveToLocation(HitResult.Location);
 		}
-		else if (CurrentGamePhase == EGamePhase::Deployment || CurrentGamePhase == EGamePhase::Battle)
+		else if (CurrentGamePhase == EGamePhase::Battle || CurrentGamePhase == EGamePhase::Deployment)
 		{
-			const FVector2f HitLocation2D(HitResult.Location.X, HitResult.Location.Y);
-			const FIntPoint GridIndex = GridActor->GetIndexFromLocation(HitLocation2D);
-			if (GridActor->IsValidIndex(GridIndex))
+			if (CurrentGamePhase == EGamePhase::Exploration)
 			{
-				// GridActor->HandleGridSelect(GridIndex);
+				const AHeroCharacter* Hero = CachedGameState->GetMainCharacter();
+				AAIController* AIController = Cast<AAIController>(Hero->GetController());
+				AIController->MoveToLocation(HitResult.Location);
+			}
+			else if (CurrentGamePhase == EGamePhase::Deployment || CurrentGamePhase == EGamePhase::Battle)
+			{
+				const FVector2f HitLocation2D(HitResult.Location.X, HitResult.Location.Y);
+				const FIntPoint GridIndex = GridActor->GetIndexFromLocation(HitLocation2D);
+				if (GridActor->IsValidIndex(GridIndex))
+				{
+					GridActor->HandleGridSelect(GridIndex);
+				}
 			}
 		}
 	}
+}
+
+void ATBSCameraPawnBase::HandleExecuteInputEvent(const FInputActionValue& ActionValue)
+{
+	// TODO: Change to cancel.
 }
 
 void ATBSCameraPawnBase::HandleHover()

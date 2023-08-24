@@ -41,9 +41,23 @@ void UGridAction::HandleGridSelect(const FIntPoint& GridIndex)
 {
 }
 
+void UGridAction::HandleGridHover(const FIntPoint& GridIndex)
+{
+}
+
 bool UGridAction::IsIndexHoverable(const FIntPoint& Index) const
 {
 	return true;
+}
+
+void UGridAction::SetShouldHandleGridHover(const bool bStatus)
+{
+	bShouldHandleGridHover = bStatus;
+}
+
+bool UGridAction::GetShouldHandleGridHover() const
+{
+	return bShouldHandleGridHover;
 }
 
 void UGridAction::FinishExecution(const EActionExecutionStatus ExecutionStatus)

@@ -104,7 +104,7 @@ void UGridVisualComponent::DrawDebugDeploymentZone(FIntPoint BottomLeftIdx, FInt
 		for (SIZE_T j = BottomLeftIdx.Y; j <= TopRightIdx.Y; j++)
 		{
 
-			OwningGridActor->UpdateGridState(FIntPoint(i, j),
+			GridStateComponent->UpdateGridStateActivity(FIntPoint(i, j),
 				EGridInstanceType::Deployment,
 				EGridInstanceActivityType::None);
 			// While on editor, the events may not be registered, so updating the visuals directly

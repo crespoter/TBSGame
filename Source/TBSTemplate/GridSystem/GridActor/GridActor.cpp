@@ -81,19 +81,6 @@ void AGridActor::OnGamePhaseChanged(const EGamePhase NewGamePhase)
 	}
 }
 
-void AGridActor::UpdateGridState(const FIntPoint& GridIndex, const EGridInstanceType InstanceType, const EGridInstanceActivityType ActivityType)
-{
-
-	FGridState GridInstanceState;
-	const bool bIsFound = GridStateComponent->GetGridUnitState(GridIndex, GridInstanceState);
-	if (!bIsFound)
-	{
-		return;
-	}
-	GridInstanceState.SetInstanceType(InstanceType);
-	GridInstanceState.SetActivityType(ActivityType);
-	GridStateComponent->AddGridState(GridIndex, GridInstanceState);
-}
 
 const UGridStateComponent* AGridActor::GetGridStateComponent() const
 {
@@ -103,76 +90,6 @@ const UGridStateComponent* AGridActor::GetGridStateComponent() const
 UGridStateComponent* AGridActor::GetGridStateComponent()
 {
 	return GridStateComponent;
-}
-
-
-void AGridActor::SetGridAsActive(const FIntPoint& Index)
-{
-	FGridState GridInstanceState;
-	GridStateComponent->GetGridUnitState(Index, GridInstanceState);
-	if (Index == GridStateComponent->GetHoveringGridIndex())
-	{
-		ResetHoveringGrid();
-	}
-	if (GridStateComponent->IsActiveIndexSet())
-	{
-		ResetActiveGrid();
-	}
-	
-	GridInstanceState.SetActivityType(EGridInstanceActivityType::Active);
-
-	GridStateComponent->AddGridState(Index, GridInstanceState);
-	
-	UpdateGridState(Index, GridInstanceState.GetInstanceType(), EGridInstanceActivityType::Active);
-	GridStateComponent->SetActiveGridIndex(Index);
-}
-
-void AGridActor::SetGridAsDefault(const FIntPoint& Index)
-{
-	FGridState GridInstanceState;
-	GridStateComponent->GetGridUnitState(Index, GridInstanceState);
-	GridInstanceState.SetActivityType(EGridInstanceActivityType::None);
-	GridStateComponent->AddGridState(Index, GridInstanceState);
-	UpdateGridState(Index, GridInstanceState.GetInstanceType(), EGridInstanceActivityType::None);
-}
-
-void AGridActor::ResetActiveGrid()
-{
-	if (!GridStateComponent->IsActiveIndexSet())
-	{
-		return;
-	}
-	const FIntPoint ActiveGridIndex = GridStateComponent->GetActiveGridIndex(); 
-	FGridState GridInstanceState;
-	GridStateComponent->GetGridUnitState(ActiveGridIndex, GridInstanceState);
-
-
-	GridInstanceState.SetActivityType(EGridInstanceActivityType::None);
-	
-	GridStateComponent->AddGridState(ActiveGridIndex, GridInstanceState);
-	UpdateGridState(ActiveGridIndex, GridInstanceState.GetInstanceType(),
-		GridInstanceState.GetActivityType());
-	
-	GridStateComponent->SetActiveGridIndex({-1, -1});
-}
-
-void AGridActor::ResetHoveringGrid()
-{
-	if (!GridStateComponent->IsHoveringIndexSet())
-	{
-		return;
-	}
-
-	const FIntPoint HoveringIndex = GridStateComponent->GetHoveringGridIndex();
-	FGridState GridInstanceState;
-	GridStateComponent->GetGridUnitState(HoveringIndex, GridInstanceState);
-
-	GridInstanceState.SetActivityType(EGridInstanceActivityType::None);
-	
-	UpdateGridState(HoveringIndex, GridInstanceState.GetInstanceType(),
-		GridInstanceState.GetActivityType());
-
-	GridStateComponent->SetHoveringGridIndex({-1, -1 });
 }
 
 void AGridActor::StartGridAction(const FIntPoint& GridIndex, ATBSCharacter* InstigatingCharacter, UGridAction* GridAction)
@@ -251,14 +168,6 @@ FIntPoint AGridActor::GetIndexFromLocation(const FVector& GridLocation) const
 	return GetIndexFromLocation(GridLocation2D);
 }
 
-void AGridActor::SetCharacterUnitAtIndex(const FIntPoint& GridIndex, ATBSCharacter* Character)
-{
-	FGridState GridInstanceState;
-	GridStateComponent->GetGridUnitState(GridIndex, GridInstanceState);
-	GridInstanceState.OccupyingUnit = Character;
-	GridStateComponent->AddGridState(GridIndex, GridInstanceState);
-}
-
 FVector AGridActor::GetWorldLocationFromIndex(const FIntPoint& Idx) const
 {
 	const FVector2f MapLocation = BottomLeft + FVector2f(Idx.X, Idx.Y) * GridStateComponent->GetGridUnitSize();
@@ -323,7 +232,7 @@ void AGridActor::ActivateDeploymentGrid(const ACombatSituation* CurrentCombatSit
 			GridStateComponent->GetGridUnitState(FIntPoint(i, j), GridInstanceState);
 			if (GridInstanceState.GridAccessState == EGridAccessState::Accessible)
 			{
-				UpdateGridState(FIntPoint(i, j),
+				GridStateComponent->UpdateGridStateActivity(FIntPoint(i, j),
 					EGridInstanceType::Deployment,
 					EGridInstanceActivityType::None);
 			}
@@ -333,7 +242,7 @@ void AGridActor::ActivateDeploymentGrid(const ACombatSituation* CurrentCombatSit
 	AHeroCharacter* HeroCharacter = GameState->GetMainCharacter();
 	check(HeroCharacter);
 	HeroCharacter->SetActorLocation(GetWorldLocationFromIndex(TopRightIndex));
-	SetCharacterUnitAtIndex(TopRightIndex, HeroCharacter);
+	GridStateComponent->SetCharacterUnitAtIndex(TopRightIndex, HeroCharacter);
 }
 
 void AGridActor::HandleHoverOnGrid(const FIntPoint& GridIndex)
@@ -342,15 +251,26 @@ void AGridActor::HandleHoverOnGrid(const FIntPoint& GridIndex)
 	{
 		return;
 	}
-	if (GameState->GetCurrentGamePhase() == EGamePhase::Deployment)
+	if (CurrentGridAction != nullptr && CurrentGridAction->GetShouldHandleGridHover())
 	{
-		ResetHoveringGrid();
-		if (!IsGridIndexHoverable(GridIndex) || GridIndex == GridStateComponent->GetActiveGridIndex())
+		CurrentGridAction->HandleGridHover(GridIndex);
+	}		
+	else
+	{
+		switch(GameState->GetCurrentGamePhase())
 		{
-			return;
+		case EGamePhase::Deployment:
+			GridStateComponent->ResetHoveringGrid();
+			if (!IsGridIndexHoverable(GridIndex) || GridIndex == GridStateComponent->GetActiveGridIndex())
+			{
+				return;
+			}
+			GridStateComponent->UpdateGridStateActivity(GridIndex, EGridInstanceType::Deployment, EGridInstanceActivityType::Hover);
+			GridStateComponent->SetHoveringGridIndex(GridIndex);
+			break;
+		default:;
 		}
-		UpdateGridState(GridIndex, EGridInstanceType::Deployment, EGridInstanceActivityType::Hover);
-		GridStateComponent->SetHoveringGridIndex(GridIndex);
+
 	}
 }
 

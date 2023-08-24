@@ -45,10 +45,6 @@ FIntPoint UGridStateComponent::GetActiveGridIndex() const
 	return ActiveGridIndex;
 }
 
-void UGridStateComponent::SetActiveGridIndex(const FIntPoint& Index)
-{
-	ActiveGridIndex = Index;
-}
 
 bool UGridStateComponent::IsHoveringIndexSet()
 {
@@ -57,7 +53,7 @@ bool UGridStateComponent::IsHoveringIndexSet()
 
 bool UGridStateComponent::IsActiveIndexSet()
 {
-	return ActiveGridIndex.X != -1 && ActiveGridIndex.Y != -1;
+	return ActiveGridIndex != GridConstants::InvalidIndex;
 }
 
 const FGridVisualState* UGridStateComponent::GetGridVisualState(const EGridInstanceType InstanceType,
@@ -120,7 +116,6 @@ void UGridStateComponent::AddGridState(const FIntPoint& Index, const FGridState&
 	{
 		GridVisualStateUpdatedDelegate.Broadcast(GridInstanceState, Index, Op);
 	}
-	
 	GridUpdatedDelegate.Broadcast(GridInstanceState, Index, Op);
 }
 
@@ -170,6 +165,82 @@ void UGridStateComponent::LoadVisualData()
 	}
 }
 
+void UGridStateComponent::ResetActiveGrid()
+{
+	if (!IsActiveIndexSet())
+	{
+		return;
+	}
+	FGridState GridInstanceState;
+	GetGridUnitState(ActiveGridIndex, GridInstanceState);
+	GridInstanceState.SetActivityType(EGridInstanceActivityType::None);
+	AddGridState(ActiveGridIndex, GridInstanceState);
+	ActiveGridIndex = GridConstants::InvalidIndex;
+}
+
+void UGridStateComponent::ResetHoveringGrid()
+{
+	if (!IsHoveringIndexSet())
+	{
+		return;
+	}
+
+	const FIntPoint HoveringIndex = GetHoveringGridIndex();
+	FGridState GridInstanceState;
+	GetGridUnitState(HoveringIndex, GridInstanceState);
+
+	GridInstanceState.SetActivityType(EGridInstanceActivityType::None);
+	
+	UpdateGridStateActivity(HoveringIndex, GridInstanceState.GetInstanceType(),
+		GridInstanceState.GetActivityType());
+
+	SetHoveringGridIndex({-1, -1 });
+}
+
+void UGridStateComponent::UpdateGridStateActivity(const FIntPoint& GridIndex, const EGridInstanceType InstanceType, const EGridInstanceActivityType ActivityType)
+{
+	
+	FGridState GridInstanceState;
+	const bool bIsFound = GetGridUnitState(GridIndex, GridInstanceState);
+	if (!bIsFound)
+	{
+		return;
+	}
+	GridInstanceState.SetInstanceType(InstanceType);
+	GridInstanceState.SetActivityType(ActivityType);
+	AddGridState(GridIndex, GridInstanceState);
+}
+
+void UGridStateComponent::SetGridAsActive(const FIntPoint& Index)
+{
+	FGridState GridInstanceState;
+	GetGridUnitState(Index, GridInstanceState);
+	if (Index == GetHoveringGridIndex())
+	{
+		ResetHoveringGrid();
+	}
+	ResetActiveGrid();
+	GridInstanceState.SetActivityType(EGridInstanceActivityType::Active);
+	AddGridState(Index, GridInstanceState);
+	ActiveGridIndex = Index;
+}
+
+void UGridStateComponent::SetGridAsDefault(const FIntPoint& Index)
+{
+	FGridState GridInstanceState;
+	GetGridUnitState(Index, GridInstanceState);
+	GridInstanceState.SetActivityType(EGridInstanceActivityType::None);
+	AddGridState(Index, GridInstanceState);
+	UpdateGridStateActivity(Index, GridInstanceState.GetInstanceType(), EGridInstanceActivityType::None);
+}
+
+void UGridStateComponent::SetCharacterUnitAtIndex(const FIntPoint& GridIndex, ATBSCharacter* Character)
+{
+	FGridState GridInstanceState;
+	GetGridUnitState(GridIndex, GridInstanceState);
+	GridInstanceState.OccupyingUnit = Character;
+	AddGridState(GridIndex, GridInstanceState);
+}
 
 void UGridStateComponent::BeginPlay()
 {

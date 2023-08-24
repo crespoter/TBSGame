@@ -6,6 +6,27 @@
 #include "Actions/GridAction.h"
 #include "MoveGridAction.generated.h"
 
+class UGridStateComponent;
+
+
+UENUM()
+enum class EGridMovementAction : uint8
+{
+	None,
+	Move,
+	Jump
+};
+
+
+USTRUCT()
+struct FGridPath
+{
+	GENERATED_BODY()
+	uint8 Distance {0};
+	FIntPoint MovedFrom {-1};
+};
+
+
 /**
  * Grid action that handles movement of a single character.
  */
@@ -26,6 +47,8 @@ public:
 
 	virtual void HandleGridSelect(const FIntPoint& GridIndex) override;
 
+	virtual void HandleGridHover(const FIntPoint& GridIndex) override;
+
 	virtual bool IsIndexHoverable(const FIntPoint& Index) const override;
 
 private:
@@ -37,11 +60,14 @@ private:
 
 	void DrawAllMoveGrid();
 
-	void DrawSingleGridUnit(const FIntPoint& GridIndex);
+	void DrawSingleGridUnit(const FIntPoint& GridIndex, const EGridInstanceActivityType ActivityType = EGridInstanceActivityType::None);
 
 	FIntPoint GetGridIndexFromOffset(const FIntPoint& Offset) const;
 	
 	uint8 MoveSpeed  {0};
 
-	TMap<FIntPoint, uint8> OffsetDistanceMap;
+	TMap<FIntPoint, FGridPath> GridPathMap;
+
+	UPROPERTY()
+	UGridStateComponent* GridStateComponent {nullptr};
 };

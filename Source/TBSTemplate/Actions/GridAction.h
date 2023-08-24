@@ -35,7 +35,14 @@ public:
 
 	virtual void HandleGridSelect(const FIntPoint& GridIndex);
 
+	virtual void HandleGridHover(const FIntPoint& GridIndex);
+
 	virtual bool IsIndexHoverable(const FIntPoint& Index) const;
+
+	// Marks whether the hover should be handled by the grid or externally.
+	FORCEINLINE void SetShouldHandleGridHover(const bool bStatus);
+
+	FORCEINLINE bool GetShouldHandleGridHover() const;
 
 	UPROPERTY()
 	FGridActionFinishedDelegate ActionFinishedDelegate;
@@ -57,6 +64,7 @@ private:
 
 	UPROPERTY()
 	AGridActor* GridActor {nullptr};
+	
 	UPROPERTY()
 	ATBSCharacter* Instigator {nullptr};
 
@@ -65,4 +73,6 @@ private:
 	EActionType ActionType {EActionType::None};
 
 	bool bIsInitialized {false};
+
+	bool bShouldHandleGridHover {false};
 };

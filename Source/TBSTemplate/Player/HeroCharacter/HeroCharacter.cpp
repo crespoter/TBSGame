@@ -21,14 +21,4 @@ void AHeroCharacter::BeginPlay()
 {
 	// TODO: Move to auto possess only main character
 	Super::BeginPlay();
-	AIController = GetWorld()->SpawnActor<AHeroAIController>(AHeroAIController::StaticClass());
-	AIController->Possess(this);
-	GameState = Cast<ATBSGameState>(GetWorld()->GetGameState());
-	check(GameState);
-	GameState->GamePhaseChangedEvent.AddDynamic(this, &ThisClass::OnGamePhaseChanged);
-}
-
-void AHeroCharacter::OnGamePhaseChanged(EGamePhase NewGamePhase)
-{
-	GetMovementComponent()->StopMovementImmediately();
 }

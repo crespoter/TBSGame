@@ -15,4 +15,14 @@ enum class EGamePhase : uint8
 	Max
 };
 
+UENUM()
+enum class EDirection
+{
+	Up,
+	Down,
+	Left,
+	Right,
+	None
+};
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FMulticastDelegate);

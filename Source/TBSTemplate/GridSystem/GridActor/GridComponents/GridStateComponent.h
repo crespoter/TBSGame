@@ -31,7 +31,6 @@ public:
 	FORCEINLINE void SetHoveringGridIndex(const FIntPoint& Index);
 	
 	FORCEINLINE FIntPoint GetActiveGridIndex() const;
-	FORCEINLINE void SetActiveGridIndex(const FIntPoint& Index);
 
 	FORCEINLINE bool IsHoveringIndexSet();
 	FORCEINLINE bool IsActiveIndexSet();
@@ -48,6 +47,19 @@ public:
 	void ResetGridState();
 
 	void LoadVisualData();
+
+	void ResetActiveGrid();
+
+	void ResetHoveringGrid();
+
+	void UpdateGridStateActivity(const FIntPoint& GridIndex, EGridInstanceType InstanceType, EGridInstanceActivityType ActivityType);
+
+	void SetGridAsActive(const FIntPoint& Index);
+
+	void SetGridAsDefault(const FIntPoint& Index);
+
+	void SetCharacterUnitAtIndex(const FIntPoint& GridIndex, ATBSCharacter* Character);
+
 
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Grid Data")

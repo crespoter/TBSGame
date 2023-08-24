@@ -15,13 +15,16 @@ bool UMoveGridAction::Initialize(AGridActor* InGridActor, ATBSCharacter* InInsti
 	MoveSpeed = 5;
 	CalculateDistanceMap();
 	DrawAllMoveGrid();
+	SetShouldHandleGridHover(true);
+	GridStateComponent = GetGridActor()->GetGridStateComponent();
+	check(GridStateComponent);
 	return true;
 }
 
 bool UMoveGridAction::CheckIfValidToExecute(const FIntPoint& TargetIndex) const
 {
-	// TODO: Check if the move location is reachable.
-	return true;
+	const FIntPoint OffsetIndex = TargetIndex - GetInstigatingIndex();
+	return OffsetIndex != GetInstigatingIndex() && GridPathMap.Contains(OffsetIndex);
 }
 
 void UMoveGridAction::Cancel()
@@ -31,26 +34,36 @@ void UMoveGridAction::Cancel()
 
 void UMoveGridAction::Execute()
 {
-	// TODO: Move the character to the grid. On finishing movement, trigger onFinishCallback.	
+	// TODO: Move the character to the grid. On finishing movement, trigger onFinishCallback.
+	
 }
 
 void UMoveGridAction::HandleGridSelect(const FIntPoint& GridIndex)
 {
-	Super::HandleGridSelect(GridIndex);
-	// TODO: Highlight the grid if its within reach
+	GridStateComponent->SetGridAsActive(GridIndex);
+}
+
+void UMoveGridAction::HandleGridHover(const FIntPoint& GridIndex)
+{
+	GridStateComponent->ResetHoveringGrid();
+	if (!IsIndexHoverable(GridIndex) || GridIndex == GridStateComponent->GetActiveGridIndex())
+	{
+		return;
+	}
+	GridStateComponent->UpdateGridStateActivity(GridIndex, EGridInstanceType::Movement, EGridInstanceActivityType::Hover);
+	GridStateComponent->SetHoveringGridIndex(GridIndex);
 }
 
 bool UMoveGridAction::IsIndexHoverable(const FIntPoint& Index) const
 {
-	return Super::IsIndexHoverable(Index);
-	// TODO: return true if hoverable
-	// TODO: We should also be handling hovering behaviour on this action
+	return CheckIfValidToExecute(Index);
 }
+
 
 void UMoveGridAction::ResetDistanceMap()
 {
-	OffsetDistanceMap.Empty();
-	OffsetDistanceMap.Reserve((MoveSpeed + 2) * (MoveSpeed + 2));
+	GridPathMap.Empty();
+	GridPathMap.Reserve((MoveSpeed + 2) * (MoveSpeed + 2));
 }
 
 void UMoveGridAction::CalculateDistanceMap()
@@ -63,31 +76,40 @@ void UMoveGridAction::CalculateDistanceMap()
 	VisitedOffsets.Reserve(MoveSpeed * MoveSpeed);
 	PendingOffsets.Enqueue(FIntPoint(0));
 	VisitedOffsets.Add(FIntPoint(0));
-	OffsetDistanceMap.Add({0}, 0);
+	GridPathMap.Emplace({0}, {0, 0});
 	while(!PendingOffsets.IsEmpty())
 	{
-		FIntPoint CurrentIndex;
-		PendingOffsets.Dequeue(CurrentIndex);
-		VisitedOffsets.Add(CurrentIndex);
-		const uint8 CurrentDistance = OffsetDistanceMap.FindChecked({
-			CurrentIndex.X,
-			CurrentIndex.Y
+		FIntPoint CurrentOffset;
+		PendingOffsets.Dequeue(CurrentOffset);
+		VisitedOffsets.Add(CurrentOffset);
+
+		const FGridPath CurrentGridPath = GridPathMap.FindChecked({
+			CurrentOffset.X,
+			CurrentOffset.Y
 		});
-		if ((CurrentDistance + 1) >= MoveSpeed)
+		
+		if ((CurrentGridPath.Distance + 1) > MoveSpeed)
 		{
 			continue;
 		}
 		TArray<FIntPoint> ValidNeighbours;
-		GetValidNeighbours(CurrentIndex, ValidNeighbours);
+		GetValidNeighbours(CurrentOffset, ValidNeighbours);
 		for (const FIntPoint NeighbourOffset : ValidNeighbours)
 		{
 			if (!VisitedOffsets.Contains(NeighbourOffset))
 			{
-				const uint8* DistanceRef = OffsetDistanceMap.Find({NeighbourOffset.X, NeighbourOffset.Y});
+				FGridPath* TargetPathRef = GridPathMap.Find({NeighbourOffset.X, NeighbourOffset.Y});
 
-				if (!DistanceRef || (CurrentDistance + 1) < *DistanceRef)
+				if (!TargetPathRef || (CurrentGridPath.Distance + 1) < TargetPathRef->Distance)
 				{
-					OffsetDistanceMap.Add(NeighbourOffset, CurrentDistance + 1);
+					if (!TargetPathRef)
+					{
+						GridPathMap.Add(NeighbourOffset, {0, {0}});
+						TargetPathRef = GridPathMap.Find(NeighbourOffset);
+					}
+					check(TargetPathRef);
+					TargetPathRef->Distance = CurrentGridPath.Distance + 1;
+					TargetPathRef->MovedFrom = CurrentOffset;
 					PendingOffsets.Enqueue(NeighbourOffset);
 				}
 			}
@@ -124,20 +146,22 @@ void UMoveGridAction::GetValidNeighbours(const FIntPoint& IndexOffset, TArray<FI
 void UMoveGridAction::DrawAllMoveGrid()
 {
 	TArray<FIntPoint> ValidIndices;
-	OffsetDistanceMap.GetKeys(ValidIndices);
+	GridPathMap.GetKeys(ValidIndices);
 	for (const FIntPoint& ValidIndex : ValidIndices)
 	{
-		
 		DrawSingleGridUnit(GetInstigatingIndex() + ValidIndex);
 	}
+	// Draw the main grid as selected.
+	DrawSingleGridUnit(GetInstigatingIndex(), EGridInstanceActivityType::Active);
+	GetGridActor()->GetGridStateComponent()->SetGridAsActive(GetInstigatingIndex());
 }
 
-void UMoveGridAction::DrawSingleGridUnit(const FIntPoint& GridIndex)
+void UMoveGridAction::DrawSingleGridUnit(const FIntPoint& GridIndex, const EGridInstanceActivityType ActivityType)
 {
 	FGridState GridState;
 	GetGridActor()->GetGridStateComponent()->GetGridUnitState(GridIndex, GridState);
 	GridState.SetInstanceType(EGridInstanceType::Movement);
-	GridState.SetActivityType(EGridInstanceActivityType::None);
+	GridState.SetActivityType(ActivityType);
 	GetGridActor()->GetGridStateComponent()->AddGridState(GridIndex, GridState);
 }
 
