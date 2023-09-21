@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "TBSPlayerController.generated.h"
 
+class UMoveGridAction;
 enum class EGamePhase : uint8;
 class ATBSGameState;
 class AHeroCharacter;
@@ -28,11 +29,18 @@ public:
 	void HandlePlayerTurn();
 
 	void SetAsSelected(uint8 PartyIndex);
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UMoveGridAction> MoveGridActionClass;
 	
 protected:
 	virtual void BeginPlay() override;
 
 private:
+
+	UFUNCTION()
+	void OnGridMoveActionFinished(EActionExecutionStatus ExecutionStatus);
+	
 	UPROPERTY()
 	ATBSGameState* GameState { nullptr };
 
@@ -44,4 +52,6 @@ private:
 	uint8 SelectedIndex {0};
 
 	bool bIsSelected {false};
+
+
 };

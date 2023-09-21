@@ -24,9 +24,10 @@ enum class EGridAccessState : uint8
 UENUM()
 enum class EGridInstanceType
 {
+	None,
 	Deployment,
 	Movement,
-	None
+	Path
 };
 
 UENUM()

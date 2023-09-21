@@ -25,4 +25,5 @@ enum class EDirection
 	None
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FMulticastDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FMulticastDynamicDelegate);
+DECLARE_MULTICAST_DELEGATE(FMulticastDelegate);

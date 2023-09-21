@@ -47,7 +47,7 @@ public:
 	FORCEINLINE AGridActor* GetGridActor() const;
 
 	UPROPERTY()
-	FMulticastDelegate NewTurnDelegate;
+	FMulticastDynamicDelegate NewTurnDelegate;
 private:
 	UFUNCTION()
 	void OnGamePhaseChanged(EGamePhase GamePhase);

@@ -1,7 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "GridActor.h"
 
-#include "EngineUtils.h"
 #include "Actions/Deploy/DeployGridAction.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "GridSystem/GridSystemTypes.h"
@@ -9,7 +8,6 @@
 #include "Components/BoxComponent.h"
 #include "CombatSituation/CombatSituation.h"
 #include "CombatSituation/DeploymentZone/DeploymentZone.h"
-#include "Data/GridVisualData/GridVisualData.h"
 #include "Game/TBSGameState.h"
 #include "GridComponents/GridStateComponent.h"
 #include "GridComponents/GridVisualComponent.h"
@@ -247,10 +245,6 @@ void AGridActor::ActivateDeploymentGrid(const ACombatSituation* CurrentCombatSit
 
 void AGridActor::HandleHoverOnGrid(const FIntPoint& GridIndex)
 {
-	if (GridStateComponent->GetHoveringGridIndex() == GridIndex)
-	{
-		return;
-	}
 	if (CurrentGridAction != nullptr && CurrentGridAction->GetShouldHandleGridHover())
 	{
 		CurrentGridAction->HandleGridHover(GridIndex);
@@ -260,6 +254,10 @@ void AGridActor::HandleHoverOnGrid(const FIntPoint& GridIndex)
 		switch(GameState->GetCurrentGamePhase())
 		{
 		case EGamePhase::Deployment:
+			if (GridStateComponent->GetHoveringGridIndex() == GridIndex)
+			{
+				return;
+			}
 			GridStateComponent->ResetHoveringGrid();
 			if (!IsGridIndexHoverable(GridIndex) || GridIndex == GridStateComponent->GetActiveGridIndex())
 			{
@@ -270,7 +268,6 @@ void AGridActor::HandleHoverOnGrid(const FIntPoint& GridIndex)
 			break;
 		default:;
 		}
-
 	}
 }
 

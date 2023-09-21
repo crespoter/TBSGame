@@ -52,7 +52,8 @@ public:
 
 	void ResetHoveringGrid();
 
-	void UpdateGridStateActivity(const FIntPoint& GridIndex, EGridInstanceType InstanceType, EGridInstanceActivityType ActivityType);
+	void UpdateGridStateActivity(const FIntPoint& GridIndex, EGridInstanceType InstanceType, 
+	    EGridInstanceActivityType ActivityType);
 
 	void SetGridAsActive(const FIntPoint& Index);
 

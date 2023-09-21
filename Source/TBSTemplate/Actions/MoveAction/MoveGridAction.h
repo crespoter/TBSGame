@@ -9,12 +9,11 @@
 class UGridStateComponent;
 
 
-UENUM()
-enum class EGridMovementAction : uint8
+enum class EMoveGridActionState : uint8
 {
 	None,
-	Move,
-	Jump
+	Selecting,
+	Executing
 };
 
 
@@ -30,7 +29,7 @@ struct FGridPath
 /**
  * Grid action that handles movement of a single character.
  */
-UCLASS()
+UCLASS(Blueprintable)
 class TBSTEMPLATE_API UMoveGridAction : public UGridAction
 {
 	GENERATED_BODY()
@@ -51,23 +50,45 @@ public:
 
 	virtual bool IsIndexHoverable(const FIntPoint& Index) const override;
 
+	void GetPathTaken(const FIntPoint& EndIndex, TArray<FIntPoint>& OutGridPath,
+		bool bShouldExcludeEdges = false, bool bIsReversed = false) const;
+
+	// Grid instance to use to highlight the path.
+	UPROPERTY(EditDefaultsOnly)
+	EGridInstanceType PathHighlightGridInstance;
+
 private:
 	void ResetDistanceMap();
 
 	void CalculateDistanceMap();
 	
-	void GetValidNeighbours(const FIntPoint& IndexOffset, TArray<FIntPoint>& OutValidIndices);
+	void GetValidNeighbours(const FIntPoint& Index, TArray<FIntPoint>& OutValidIndices);
 
 	void DrawAllMoveGrid();
-
+	
 	void DrawSingleGridUnit(const FIntPoint& GridIndex, const EGridInstanceActivityType ActivityType = EGridInstanceActivityType::None);
 
-	FIntPoint GetGridIndexFromOffset(const FIntPoint& Offset) const;
-	
+	void ClearPathGrids();
+
+	UFUNCTION()
+	void OnInstigatorReachedTarget();
+
+protected:
+	virtual void FinishExecution(const EActionExecutionStatus ExecutionStatus) override;
+
+private:
 	uint8 MoveSpeed  {0};
 
 	TMap<FIntPoint, FGridPath> GridPathMap;
 
 	UPROPERTY()
 	UGridStateComponent* GridStateComponent {nullptr};
+
+	bool bHasFinishedSetup {false};
+
+	// Path to target (in reverse)
+	TArray<FIntPoint> SelectedPath;
+
+	EMoveGridActionState CurrentState {EMoveGridActionState::None};
+
 };

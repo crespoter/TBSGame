@@ -2,7 +2,6 @@
 
 
 #include "Character/TBSCharacter.h"
-
 #include "AI/HeroAIController/HeroAIController.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "Game/TBSGameState.h"
@@ -35,7 +34,9 @@ void ATBSCharacter::BeginPlay()
 	GameState = Cast<ATBSGameState>(GetWorld()->GetGameState());
 	check(GameState);
 	GameState->GamePhaseChangedEvent.AddDynamic(this, &ThisClass::OnGamePhaseChanged);
-	
+	UPathFollowingComponent* PathFollowingComponent = AIController->GetPathFollowingComponent();
+	check(PathFollowingComponent);
+	PathFollowingComponent->OnRequestFinished.AddUFunction(this, "OnPathFinished");
 }
 
 // Called every frame
@@ -49,7 +50,7 @@ void ATBSCharacter::Tick(float DeltaTime)
 void ATBSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
+	
 }
 
 
@@ -58,7 +59,12 @@ void ATBSCharacter::OnGamePhaseChanged(const EGamePhase NewGamePhase)
 	GetMovementComponent()->StopMovementImmediately();
 }
 
-void ATBSCharacter::MoveToLocation(const FVector TargetLocation)
+void ATBSCharacter::MoveToLocation(const FVector& TargetLocation)
 {
 	AIController->MoveToLocation(TargetLocation);
+}
+
+void ATBSCharacter::OnPathFinished()
+{
+	OnPathFinishedDelegate.Broadcast();
 }

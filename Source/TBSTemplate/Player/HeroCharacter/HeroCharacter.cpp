@@ -3,11 +3,6 @@
 
 #include "Player/HeroCharacter/HeroCharacter.h"
 
-#include "AI/HeroAIController/HeroAIController.h"
-#include "Game/TBSGameState.h"
-#include "GameFramework/PawnMovementComponent.h"
-#include "Components/WidgetComponent.h"
-
 //TODO: Do we really need HeroCharacter? TBSCharacter can work as the character class for both AI and player Characters.
 
 // Sets default values

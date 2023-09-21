@@ -120,6 +120,10 @@ void ATBSCameraPawnBase::HandleHover()
 			{
 				GridActor->HandleHoverOnGrid(GridIndex);
 			}
+			else
+			{
+				GridActor->HandleHoverOnGrid(GridConstants::InvalidIndex);
+			}
 		}
 	}
 }

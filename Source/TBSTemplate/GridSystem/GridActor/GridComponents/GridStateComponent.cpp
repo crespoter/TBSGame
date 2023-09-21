@@ -197,7 +197,8 @@ void UGridStateComponent::ResetHoveringGrid()
 	SetHoveringGridIndex({-1, -1 });
 }
 
-void UGridStateComponent::UpdateGridStateActivity(const FIntPoint& GridIndex, const EGridInstanceType InstanceType, const EGridInstanceActivityType ActivityType)
+void UGridStateComponent::UpdateGridStateActivity(const FIntPoint& GridIndex,
+	const EGridInstanceType InstanceType, const EGridInstanceActivityType ActivityType)
 {
 	
 	FGridState GridInstanceState;
@@ -209,6 +210,18 @@ void UGridStateComponent::UpdateGridStateActivity(const FIntPoint& GridIndex, co
 	GridInstanceState.SetInstanceType(InstanceType);
 	GridInstanceState.SetActivityType(ActivityType);
 	AddGridState(GridIndex, GridInstanceState);
+	switch(ActivityType)
+	{
+	case EGridInstanceActivityType::Active:
+		SetGridAsActive(GridIndex);
+		break;
+	case EGridInstanceActivityType::Hover:
+		ResetHoveringGrid();
+		SetHoveringGridIndex(GridIndex);
+		break;
+	case EGridInstanceActivityType::None:
+		break;
+	}
 }
 
 void UGridStateComponent::SetGridAsActive(const FIntPoint& Index)
