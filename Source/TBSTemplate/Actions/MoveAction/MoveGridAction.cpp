@@ -79,6 +79,10 @@ void UMoveGridAction::HandleGridHover(const FIntPoint& GridIndex)
 	{
 		ClearPathGrids();
 	}
+	if (!bIsIndexHoverable)
+	{
+		GridStateComponent->ResetHoveringGrid();
+	}
 	if (!bIsIndexHoverable || bIsSameIndex)
 	{
 		return;
