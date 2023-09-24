@@ -3,7 +3,7 @@
 #include "EngineUtils.h"
 #include "CombatSituation/CombatSituation.h"
 #include "Player/PlayerController/TBSPlayerController.h"
-#include "TBSTemplate/Player/HeroCharacter/HeroCharacter.h"
+#include "TBSTemplate/Character/TBSCharacter.h"
 #include "TBSTemplate/GridSystem/GridActor/GridActor.h"
 
 ATBSGameState::ATBSGameState()
@@ -51,7 +51,7 @@ void ATBSGameState::OnTurnChanged()
 }
 
 
-AHeroCharacter* ATBSGameState::GetMainCharacter() const
+ATBSCharacter* ATBSGameState::GetMainCharacter() const
 {
 	return MainCharacter;
 }
@@ -85,7 +85,7 @@ void ATBSGameState::BeginPlay()
 {
 	Super::BeginPlay();
 	// TODO: Actually spawn main character and party members on map
-	MainCharacter = *TActorIterator<AHeroCharacter>(GetWorld());
+	MainCharacter = *TActorIterator<ATBSCharacter>(GetWorld());
 	PlayerParty.Add(MainCharacter);
 	check(MainCharacter);
 	PlayerController = Cast<ATBSPlayerController>(GetWorld()->GetFirstPlayerController());

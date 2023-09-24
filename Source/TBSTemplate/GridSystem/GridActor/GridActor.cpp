@@ -2,6 +2,7 @@
 #include "GridActor.h"
 
 #include "Actions/Deploy/DeployGridAction.h"
+#include "Character/TBSCharacter.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "GridSystem/GridSystemTypes.h"
 #include "GridSystem/GridBlockerVolume/GridBlockerVolume.h"
@@ -11,7 +12,6 @@
 #include "Game/TBSGameState.h"
 #include "GridComponents/GridStateComponent.h"
 #include "GridComponents/GridVisualComponent.h"
-#include "Player/HeroCharacter/HeroCharacter.h"
 
 AGridActor::AGridActor()
 {
@@ -237,10 +237,10 @@ void AGridActor::ActivateDeploymentGrid(const ACombatSituation* CurrentCombatSit
 		}
 	}
 	// TODO: Add other Characters
-	AHeroCharacter* HeroCharacter = GameState->GetMainCharacter();
-	check(HeroCharacter);
-	HeroCharacter->SetActorLocation(GetWorldLocationFromIndex(TopRightIndex));
-	GridStateComponent->SetCharacterUnitAtIndex(TopRightIndex, HeroCharacter);
+	ATBSCharacter* MainCharacter = GameState->GetMainCharacter();
+	check(MainCharacter);
+	MainCharacter->SetActorLocation(GetWorldLocationFromIndex(TopRightIndex));
+	GridStateComponent->SetCharacterUnitAtIndex(TopRightIndex, MainCharacter);
 }
 
 void AGridActor::HandleHoverOnGrid(const FIntPoint& GridIndex)

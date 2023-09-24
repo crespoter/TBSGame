@@ -10,7 +10,6 @@
 class UGridConfigurationActorComponent;
 class AGridActor;
 class ATBSCameraPawnBase;
-class AHeroCharacter;
 class ACombatSituation;
 class ATBSCharacter;
 class ATBSPlayerController;
@@ -39,7 +38,7 @@ public:
 	UFUNCTION()
 	void OnTurnChanged();
 	
-	FORCEINLINE AHeroCharacter* GetMainCharacter() const;
+	FORCEINLINE ATBSCharacter* GetMainCharacter() const;
 	
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE AGridActor* GetActiveGridActor() const;
@@ -66,7 +65,7 @@ protected:
 	AGridActor* ActiveGridActor {nullptr};
 
 	UPROPERTY()
-	AHeroCharacter* MainCharacter {nullptr};
+	ATBSCharacter* MainCharacter {nullptr};
 	
 	UPROPERTY()
 	ACombatSituation* CurrentActiveCombatSituation {nullptr};

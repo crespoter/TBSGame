@@ -6,9 +6,6 @@
 #include "AIController.h"
 #include "HeroAIController.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class TBSTEMPLATE_API AHeroAIController : public AAIController
 {

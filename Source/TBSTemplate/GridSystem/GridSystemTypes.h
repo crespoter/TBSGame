@@ -3,7 +3,6 @@
 
 DECLARE_LOG_CATEGORY_EXTERN(LogGridSystems, Log, All);
 
-class AHeroCharacter;
 class ATBSCharacter;
 
 namespace GridConstants

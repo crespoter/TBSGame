@@ -58,7 +58,7 @@ private:
 	// TODO: Change to TBSCharacter, auto populate based on tags
 	// Participants in the order of their speed
 	UPROPERTY()
-    TArray<AHeroCharacter*> ActiveParticipants;
+    TArray<ATBSCharacter*> ActiveParticipants;
 
 	UPROPERTY()
 	ATBSGameState* GameState {nullptr};

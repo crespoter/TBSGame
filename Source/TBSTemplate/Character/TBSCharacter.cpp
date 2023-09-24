@@ -6,6 +6,7 @@
 #include "GameFramework/PawnMovementComponent.h"
 #include "Game/TBSGameState.h"
 #include "GridSystem/GridActor/GridActor.h"
+#include "Navigation/PathFollowingComponent.h"
 
 // Sets default values
 ATBSCharacter::ATBSCharacter()

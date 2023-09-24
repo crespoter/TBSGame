@@ -5,12 +5,12 @@
 #include "Game/TBSGameState.h"
 #include "Player/PlayerController/TBSPlayerController.h"
 #include "Camera/CameraComponent.h"
+#include "Character/TBSCharacter.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInput/Public/InputMappingContext.h"
 #include "EnhancedInput/Public/EnhancedInputSubsystems.h"
 #include "EnhancedInput/Public/EnhancedInputComponent.h"
 #include "GridSystem/GridActor/GridActor.h"
-#include "Player/HeroCharacter/HeroCharacter.h"
 
 
 // Sets default values
@@ -76,7 +76,7 @@ void ATBSCameraPawnBase::HandleSelectInputEvent(const FInputActionValue& ActionV
 	{
 		if (CurrentGamePhase == EGamePhase::Exploration)
 		{
-			const AHeroCharacter* Hero = CachedGameState->GetMainCharacter();
+			const ATBSCharacter* Hero = CachedGameState->GetMainCharacter();
 			AAIController* AIController = Cast<AAIController>(Hero->GetController());
 			AIController->MoveToLocation(HitResult.Location);
 		}
@@ -84,7 +84,7 @@ void ATBSCameraPawnBase::HandleSelectInputEvent(const FInputActionValue& ActionV
 		{
 			if (CurrentGamePhase == EGamePhase::Exploration)
 			{
-				const AHeroCharacter* Hero = CachedGameState->GetMainCharacter();
+				const ATBSCharacter* Hero = CachedGameState->GetMainCharacter();
 				AAIController* AIController = Cast<AAIController>(Hero->GetController());
 				AIController->MoveToLocation(HitResult.Location);
 			}
