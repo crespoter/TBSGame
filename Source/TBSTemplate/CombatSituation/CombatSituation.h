@@ -55,8 +55,6 @@ private:
 	UFUNCTION()
 	void TriggerTurn(const bool bIsNextTurn);
 	
-	// TODO: Change to TBSCharacter, auto populate based on tags
-	// Participants in the order of their speed
 	UPROPERTY()
     TArray<ATBSCharacter*> ActiveParticipants;
 
