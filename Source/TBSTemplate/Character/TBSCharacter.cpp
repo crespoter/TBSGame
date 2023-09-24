@@ -62,7 +62,7 @@ void ATBSCharacter::OnGamePhaseChanged(const EGamePhase NewGamePhase)
 
 void ATBSCharacter::MoveToLocation(const FVector& TargetLocation)
 {
-	AIController->MoveToLocation(TargetLocation);
+	AIController->MoveToLocation(TargetLocation, 0.0f);
 }
 
 void ATBSCharacter::OnPathFinished()
