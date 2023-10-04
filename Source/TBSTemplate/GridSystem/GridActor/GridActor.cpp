@@ -33,22 +33,18 @@ AGridActor::AGridActor()
 	GridVisualComponent = CreateDefaultSubobject<UGridVisualComponent>("Grid Visual Component");
 	check(GridVisualComponent);
 	GridVisualComponent->Initialize(GridStateComponent, InstancedStaticMeshComponent, this);
-
 }
+
 
 void AGridActor::BeginPlay()
 {
-	// TODO: Generate grid as a Call in editor function. This way the data can be package into build rather than being generated everytime.
-
 	Super::BeginPlay();
-	check(bIsGridGenerated);
 	ClearGridUnits();
 	GenerateGrid();
 	GameState = Cast<ATBSGameState>(GetWorld()->GetGameState());
 	check(GameState);
 	GameState->GamePhaseChangedEvent.AddDynamic(this, &ThisClass::AGridActor::OnGamePhaseChanged);
 }
-
 
 
 void AGridActor::CalculateDimensions()
@@ -95,6 +91,11 @@ void AGridActor::StartGridAction(const FIntPoint& GridIndex, ATBSCharacter* Inst
 	CurrentGridAction = GridAction;
 	check(CurrentGridAction);
 	CurrentGridAction->Initialize(this, InstigatingCharacter, GridIndex);
+}
+
+bool AGridActor::GetIsGridGenerated() const
+{
+	return bIsGridGenerated;
 }
 
 void AGridActor::GenerateGrid()
@@ -172,6 +173,21 @@ FVector AGridActor::GetWorldLocationFromIndex(const FIntPoint& Idx) const
 	FGridState GridInstanceState;
 	GridStateComponent->GetGridUnitState(Idx, GridInstanceState);
 	return FVector(MapLocation.X, MapLocation.Y,  GridInstanceState.Height);
+}
+
+FVector AGridActor::GetNearestGridLocation(const FVector& Location, FIntPoint& OutGridIndex) const
+{
+	FIntPoint GridIndex = GetIndexFromLocation(Location);
+	if (GridIndex.X >= Dimension.X)
+	{
+		GridIndex.X = Dimension.X - 1;
+	}
+	if (GridIndex.Y >= Dimension.Y)
+	{
+		GridIndex.Y = Dimension.Y - 1;
+	}
+	OutGridIndex = GridIndex;
+	return GetWorldLocationFromIndex(GridIndex);
 }
 
 

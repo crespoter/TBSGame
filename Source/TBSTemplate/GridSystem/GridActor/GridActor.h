@@ -28,11 +28,11 @@ class TBSTEMPLATE_API AGridActor : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AGridActor();
-
+	
 	// Generates the grid.
 	UFUNCTION()
 	void GenerateGrid();
-
+	
 	UFUNCTION(BlueprintCallable)
 	FIntPoint GetIndexFromLocation(const FVector2f& GridLocation) const;
 
@@ -47,6 +47,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FVector GetWorldLocationFromIndex(const FIntPoint& Idx) const;
 
+	/**
+	 * @brief Returns the nearest grid center to the provided location
+	 * @param Location Vector location of the position to be converted.
+	 * @param OutGridIndex Grid index to which the character is snapped to.
+	 * @return Grid unit center
+	 */
+	UFUNCTION(BlueprintCallable)
+	FVector GetNearestGridLocation(const FVector& Location, FIntPoint& OutGridIndex) const;
+	
 	/**
 	 * @brief Checks if given index is valid for the grid actor. Returns false
 	 * for out of bounds and blocked indexes
@@ -78,6 +87,7 @@ public:
 
 	void StartGridAction(const FIntPoint& GridIndex, ATBSCharacter* InstigatingCharacter, UGridAction* GridAction);
 
+	FORCEINLINE bool GetIsGridGenerated() const;
 private:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -105,16 +115,19 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category="Grid Generation")
 	float RayTraceHeight = 1000.0f;
 	
-
-	UPROPERTY()
 	bool bIsGridGenerated { false };
 	
 	
 	UPROPERTY()
 	ATBSGameState* GameState {nullptr};
 
+	UPROPERTY()
 	FVector2f BottomLeft {0};
+
+	UPROPERTY()
 	FVector2f TopRight {0};
+
+	UPROPERTY()
 	FVector2D Dimension;
 
 	UPROPERTY()

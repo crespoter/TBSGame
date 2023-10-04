@@ -9,8 +9,6 @@ public class TBSTemplateEditorTarget : TargetRules
 	{
 		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
-		// Pretty sure we dont need this.
-		// IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_1;
 		ExtraModuleNames.Add("TBSTemplate");
 	}
 }

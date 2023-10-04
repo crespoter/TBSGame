@@ -36,28 +36,35 @@ public:
 
 	UFUNCTION()
 	FORCEINLINE ADeploymentZone* GetDeploymentZone() const;
-
-	UFUNCTION()
-	FORCEINLINE uint8 GetCurrentTurnTeamId() const;
 	
-	UPROPERTY(EditInstanceOnly, Category = "Battle")
-	FName NPCCombatantId;
-
 	UFUNCTION()
 	FORCEINLINE AGridActor* GetGridActor() const;
 
+	UFUNCTION()
+	void RegisterAICombatant(ATBSAICharacter* AICombatant);
+
+	UFUNCTION()
+	bool GetIsPlayersTurn() const;
+	
 	UPROPERTY()
-	FMulticastDynamicDelegate NewTurnDelegate;
+	FTBSMulticastDynamicDelegate NewTurnDelegate;
+	
 private:
 	UFUNCTION()
 	void OnGamePhaseChanged(EGamePhase GamePhase);
 
 	UFUNCTION()
-	void TriggerTurn(const bool bIsNextTurn);
+	void AddEnemiesToGrid();
+
+	UFUNCTION()
+	void TriggerTurn();
 	
 	UPROPERTY()
-    TArray<ATBSCharacter*> ActiveParticipants;
+    TSet<ATBSCharacter*> PlayerParticipants;
 
+	UPROPERTY()
+	TSet<ATBSAICharacter*> EnemyParticipants;
+	
 	UPROPERTY()
 	ATBSGameState* GameState {nullptr};
 
@@ -69,9 +76,4 @@ private:
 	UPROPERTY(EditInstanceOnly, Category="Grid")
 	AGridActor* GridActor {nullptr};
 
-	TMap<uint8, TArray<ATBSCharacter*>> TeamUnitMap;
-
-	TArray<uint8> ParticipatingTeams;
-
-	uint8 CurrentTurnTeamIndex {0};
 };

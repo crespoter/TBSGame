@@ -38,8 +38,7 @@ EGamePhase ATBSGameState::GetCurrentGamePhase() const
 void ATBSGameState::OnTurnChanged()
 {
 	check(ActiveGridActor);
-	const uint8 CurrentTeamId = GetCurrentActiveCombatSituation()->GetCurrentTurnTeamId();
-	if (CurrentTeamId == Constants::PlayerTeamId)
+	if (CurrentActiveCombatSituation->GetIsPlayersTurn())
 	{
 		// Delegate this to the player controller.
 		PlayerController->HandlePlayerTurn();

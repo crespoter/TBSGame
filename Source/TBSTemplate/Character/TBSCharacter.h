@@ -12,6 +12,7 @@ class AGridActor;
 enum class EGamePhase : uint8;
 class AHeroAIController;
 class ATBSGameState;
+class UHealthComponent;
 
 
 UCLASS()
@@ -45,10 +46,13 @@ public:
 	void MoveToLocation(const FVector& TargetLocation);
 
 	UPROPERTY()
-	FMulticastDynamicDelegate OnPathFinishedDelegate;
+	FTBSMulticastDynamicDelegate OnPathFinishedDelegate;
+
+protected:
+	UPROPERTY()
+	UHealthComponent* HealthComponent {nullptr};
 	
 private:
-
 
 	UFUNCTION()
 	void OnPathFinished();

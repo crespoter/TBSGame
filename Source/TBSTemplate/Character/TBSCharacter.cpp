@@ -1,7 +1,6 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Character/TBSCharacter.h"
+
+#include "ActorComponents/Health/HealthComponent.h"
 #include "AI/HeroAIController/HeroAIController.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "Game/TBSGameState.h"
@@ -11,9 +10,8 @@
 // Sets default values
 ATBSCharacter::ATBSCharacter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>("Health Component");
 }
 
 void ATBSCharacter::DeployCharacterOnGrid(AGridActor* GridActor, const FIntPoint& SourceIndex,
@@ -51,7 +49,6 @@ void ATBSCharacter::Tick(float DeltaTime)
 void ATBSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-	
 }
 
 
@@ -62,7 +59,8 @@ void ATBSCharacter::OnGamePhaseChanged(const EGamePhase NewGamePhase)
 
 void ATBSCharacter::MoveToLocation(const FVector& TargetLocation)
 {
-	AIController->MoveToLocation(TargetLocation, 0.0f);
+	AIController->MoveToLocation(TargetLocation, 0.0f, true,
+		true, false, false);
 }
 
 void ATBSCharacter::OnPathFinished()

@@ -2,9 +2,13 @@
 
 
 #include "CombatSituation/CombatSituation.h"
+
+#include "Character/AICharacter/TBSAICharacter.h"
 #include "DeploymentZone/DeploymentZone.h"
 #include "Game/TBSGameState.h"
 #include "Game/TBSTypes.h"
+#include "GridSystem/GridActor/GridActor.h"
+#include "GridSystem/GridActor/GridComponents/GridStateComponent.h"
 
 // Sets default values
 ACombatSituation::ACombatSituation()
@@ -16,11 +20,11 @@ ACombatSituation::ACombatSituation()
 void ACombatSituation::BeginPlay()
 {
 	Super::BeginPlay();
-	check(!NPCCombatantId.IsNone());
 	GameState = Cast<ATBSGameState>(GetWorld()->GetGameState());
 	check(GameState);
 	check(GridActor);
-	// TODO: Collect Combatants and teams in this situation.
+	PlayerParticipants.Reset();
+	EnemyParticipants.Reset();
 }
 
 void ACombatSituation::StartCombatSituation(ADeploymentZone* InDeploymentZone)
@@ -29,15 +33,9 @@ void ACombatSituation::StartCombatSituation(ADeploymentZone* InDeploymentZone)
 	{
 		bIsActive = true;
 		DeploymentZone = InDeploymentZone;
-		TeamUnitMap.Add(Constants::PlayerTeamId, GameState->GetPlayerParty());
-		ParticipatingTeams.AddUnique(Constants::PlayerTeamId);
-		// Sorts the teams. Lower team id teams always goes first.
-		ParticipatingTeams.Sort();
-		// TODO: Move all npc characters to appropriate grid location
 		GameState->StartDeploymentPhase(this);
 		GameState->GamePhaseChangedEvent.AddDynamic(this, &ThisClass::OnGamePhaseChanged);
 	}
-	check(ParticipatingTeams.Num() > 0);
 }
 
 ADeploymentZone* ACombatSituation::GetDeploymentZone() const
@@ -45,15 +43,21 @@ ADeploymentZone* ACombatSituation::GetDeploymentZone() const
 	return DeploymentZone;
 }
 
-uint8 ACombatSituation::GetCurrentTurnTeamId() const
-{
-	check(CurrentTurnTeamIndex < ParticipatingTeams.Num());
-	return ParticipatingTeams[CurrentTurnTeamIndex];
-}
 
 AGridActor* ACombatSituation::GetGridActor() const
 {
 	return GridActor;
+}
+
+void ACombatSituation::RegisterAICombatant(ATBSAICharacter* AICombatant)
+{
+	EnemyParticipants.Emplace(AICombatant);
+}
+
+bool ACombatSituation::GetIsPlayersTurn() const
+{
+	// TODO: 
+	return true;
 }
 
 void ACombatSituation::OnGamePhaseChanged(EGamePhase GamePhase)
@@ -62,18 +66,24 @@ void ACombatSituation::OnGamePhaseChanged(EGamePhase GamePhase)
 	{
 	case EGamePhase::Battle:
 		// Trigger the first turn.
-		CurrentTurnTeamIndex = 0;
-		TriggerTurn(false);
+		AddEnemiesToGrid();
+		TriggerTurn();
 		break;
 	default:;
 	}
 }
 
-void ACombatSituation::TriggerTurn(const bool bIsNextTurn)
+void ACombatSituation::AddEnemiesToGrid()
 {
-	if (bIsNextTurn)
+	check(GridActor);
+	for (ATBSAICharacter* Character : EnemyParticipants)
 	{
-		CurrentTurnTeamIndex = (CurrentTurnTeamIndex + 1) % ParticipatingTeams.Num();
+		FIntPoint Idx = Character->SnapToGrid();
+		GridActor->GetGridStateComponent()->SetCharacterUnitAtIndex(Idx, Character);
 	}
+}
+
+void ACombatSituation::TriggerTurn()
+{
 	NewTurnDelegate.Broadcast();
 }
