@@ -12,6 +12,7 @@ ATBSCharacter::ATBSCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>("Health Component");
+	check(HealthComponent);
 }
 
 void ATBSCharacter::DeployCharacterOnGrid(AGridActor* GridActor, const FIntPoint& SourceIndex,
@@ -30,12 +31,17 @@ void ATBSCharacter::BeginPlay()
 	Super::BeginPlay();
 	AIController = GetWorld()->SpawnActor<AHeroAIController>(AHeroAIController::StaticClass());
 	AIController->Possess(this);
+
 	GameState = Cast<ATBSGameState>(GetWorld()->GetGameState());
 	check(GameState);
 	GameState->GamePhaseChangedEvent.AddDynamic(this, &ThisClass::OnGamePhaseChanged);
+
 	UPathFollowingComponent* PathFollowingComponent = AIController->GetPathFollowingComponent();
 	check(PathFollowingComponent);
 	PathFollowingComponent->OnRequestFinished.AddUFunction(this, "OnPathFinished");
+
+	HealthComponent->HealthChangedDelegate.AddDynamic(this, &ThisClass::ATBSCharacter::OnHealthChanged);
+	HealthComponent->HealthDepletedDelegate.AddDynamic(this, &ThisClass::ATBSCharacter::OnHealthDepleted);
 }
 
 // Called every frame
@@ -61,6 +67,14 @@ void ATBSCharacter::MoveToLocation(const FVector& TargetLocation)
 {
 	AIController->MoveToLocation(TargetLocation, 0.0f, true,
 		true, false, false);
+}
+
+void ATBSCharacter::OnHealthChanged(int32 OldHealth, int32 newHealth)
+{
+}
+
+void ATBSCharacter::OnHealthDepleted()
+{
 }
 
 void ATBSCharacter::OnPathFinished()

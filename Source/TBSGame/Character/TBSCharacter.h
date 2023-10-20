@@ -49,9 +49,14 @@ public:
 	FTBSMulticastDynamicDelegate OnPathFinishedDelegate;
 
 protected:
+	UFUNCTION()
+	void OnHealthChanged(int32 OldHealth, int32 newHealth);
+
+	UFUNCTION()
+	void OnHealthDepleted();
+	
 	UPROPERTY()
 	UHealthComponent* HealthComponent {nullptr};
-	
 private:
 
 	UFUNCTION()
@@ -62,5 +67,4 @@ private:
 
 	UPROPERTY()
 	ATBSGameState* GameState {nullptr};
-
 };

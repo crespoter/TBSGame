@@ -51,6 +51,9 @@ public:
 	FORCEINLINE const TArray<ATBSCharacter*>* GetPlayerPartyRef() const;
 	FORCEINLINE TArray<ATBSCharacter*>* GetPlayerPartyRef();
 
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE ATBSCameraPawnBase* GetCameraPawn();
+
 	// Properties
 	
 	UPROPERTY(BlueprintAssignable)
@@ -75,4 +78,7 @@ protected:
 
 	UPROPERTY()
 	ATBSPlayerController* PlayerController {nullptr};
+
+	UPROPERTY()
+	ATBSCameraPawnBase* CameraPawn {nullptr};
 };

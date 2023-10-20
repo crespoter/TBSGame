@@ -3,6 +3,7 @@
 #include "EngineUtils.h"
 #include "CombatSituation/CombatSituation.h"
 #include "Player/PlayerController/TBSPlayerController.h"
+#include "Player/CameraPawn/TBSCameraPawnBase.h"
 #include "TBSGame/Character/TBSCharacter.h"
 #include "TBSGame/GridSystem/GridActor/GridActor.h"
 
@@ -80,13 +81,22 @@ TArray<ATBSCharacter*>* ATBSGameState::GetPlayerPartyRef()
 	return &PlayerParty;
 }
 
+ATBSCameraPawnBase* ATBSGameState::GetCameraPawn()
+{
+	return CameraPawn;
+}
+
 void ATBSGameState::BeginPlay()
 {
 	Super::BeginPlay();
-	// TODO: Actually spawn main character and party members on map
+	// TODO: Actually spawn main character and party members on map 
 	MainCharacter = *TActorIterator<ATBSCharacter>(GetWorld());
 	PlayerParty.Add(MainCharacter);
 	check(MainCharacter);
+
 	PlayerController = Cast<ATBSPlayerController>(GetWorld()->GetFirstPlayerController());
 	check(PlayerController);
+
+	CameraPawn = *TActorIterator<ATBSCameraPawnBase>(GetWorld());
+	check(CameraPawn);
 }
