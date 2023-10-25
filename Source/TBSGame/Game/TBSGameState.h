@@ -7,6 +7,7 @@
 #include "TBSGame/Game/TBSTypes.h"
 #include "TBSGameState.generated.h"
 
+class ACombatManager;
 class UGridConfigurationActorComponent;
 class AGridActor;
 class ATBSCameraPawnBase;
@@ -59,6 +60,10 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FonGamePhaseChanged GamePhaseChangedEvent;
 
+	// Characters to be spawned when there is no data for them present.
+	UPROPERTY(EditDefaultsOnly)
+	TArray<TSubclassOf<ATBSCharacter>> DefaultCharacters;
+	
 protected:
 	virtual void BeginPlay() override;
 
@@ -81,4 +86,7 @@ protected:
 
 	UPROPERTY()
 	ATBSCameraPawnBase* CameraPawn {nullptr};
+
+	UPROPERTY()
+	ACombatManager* CombatManager {nullptr};
 };

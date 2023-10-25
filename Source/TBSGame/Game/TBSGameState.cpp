@@ -2,6 +2,7 @@
 #include "TBSGameState.h"
 #include "EngineUtils.h"
 #include "CombatSituation/CombatSituation.h"
+#include "CombatSituation/CombatManager/CombatManager.h"
 #include "Player/PlayerController/TBSPlayerController.h"
 #include "Player/CameraPawn/TBSCameraPawnBase.h"
 #include "TBSGame/Character/TBSCharacter.h"
@@ -89,8 +90,11 @@ ATBSCameraPawnBase* ATBSGameState::GetCameraPawn()
 void ATBSGameState::BeginPlay()
 {
 	Super::BeginPlay();
+	check(DefaultCharacters.Num() > 0);
 	// TODO: Actually spawn main character and party members on map 
-	MainCharacter = *TActorIterator<ATBSCharacter>(GetWorld());
+
+	// MainCharacter = *TActorIterator<ATBSCharacter>(GetWorld());
+	MainCharacter = GetWorld()->SpawnActor<ATBSCharacter>(DefaultCharacters[0]);
 	PlayerParty.Add(MainCharacter);
 	check(MainCharacter);
 
@@ -99,4 +103,10 @@ void ATBSGameState::BeginPlay()
 
 	CameraPawn = *TActorIterator<ATBSCameraPawnBase>(GetWorld());
 	check(CameraPawn);
+
+	CombatManager = *TActorIterator<ACombatManager>(GetWorld());
+	check(CombatManager);
+	
+	// Trigger the first combat situation
+	CombatManager->TriggerNextCombatSituation();
 }

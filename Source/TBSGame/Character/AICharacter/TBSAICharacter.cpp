@@ -6,6 +6,10 @@
 #include "Components/CapsuleComponent.h"
 #include "GridSystem/GridActor/GridActor.h"
 
+ATBSAICharacter::ATBSAICharacter()
+{
+}
+
 FIntPoint ATBSAICharacter::SnapToGrid()
 {
 	check(CombatSituation);
@@ -28,3 +32,14 @@ void ATBSAICharacter::BeginPlay()
 	check(CombatSituation);
 	CombatSituation->RegisterAICombatant(this);
 }
+
+#if WITH_EDITOR
+void ATBSAICharacter::PostEditMove(bool bFinished)
+{
+	Super::PostEditMove(bFinished);
+	if (CombatSituation && bFinished)
+	{
+		SnapToGrid();
+	}
+}
+#endif

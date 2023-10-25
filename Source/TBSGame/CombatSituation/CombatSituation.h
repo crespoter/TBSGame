@@ -45,9 +45,15 @@ public:
 
 	UFUNCTION()
 	bool GetIsPlayersTurn() const;
+
+	UFUNCTION()
+	void StartDeploymentSelection();
 	
 	UPROPERTY()
 	FTBSMulticastDynamicDelegate NewTurnDelegate;
+
+	UPROPERTY(EditInstanceOnly)
+	TArray<ADeploymentZone*> DeploymentZones;
 	
 private:
 	UFUNCTION()
@@ -69,7 +75,7 @@ private:
 	ATBSGameState* GameState {nullptr};
 
 	UPROPERTY()
-	ADeploymentZone* DeploymentZone {nullptr};
+	ADeploymentZone* SelectedDeploymentZone {nullptr};
 	
 	bool bIsActive {false};
 

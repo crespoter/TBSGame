@@ -47,6 +47,10 @@ void ATBSCameraPawnBase::BeginPlay()
 	check(CachedGameState);
 
 	CachedGameState->GamePhaseChangedEvent.AddDynamic(this, &ATBSCameraPawnBase::HandleGamePhaseChanged);
+
+	// camera pawn will miss the handle game phase that is called
+	// on begin play.
+	HandleGamePhaseChanged(CachedGameState->GetCurrentGamePhase());
 }
 
 void ATBSCameraPawnBase::HandleCameraMovementInputEvent(const FInputActionValue& ActionValue)

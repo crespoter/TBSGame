@@ -13,7 +13,7 @@ class TBSGAME_API ATBSAICharacter : public ATBSCharacter
 {
 	GENERATED_BODY()
 public:
-	ATBSAICharacter() = default;
+	ATBSAICharacter();
 
 	/**
 	 * @brief Snaps the character to the grid in the combat situation
@@ -22,8 +22,16 @@ public:
 	UFUNCTION(CallInEditor, Category="AI Character")
 	FIntPoint SnapToGrid();
 
-	virtual void BeginPlay() override;
+
 	
+
+	virtual void BeginPlay() override;
+
+#if WITH_EDITOR
+	virtual void PostEditMove(bool bFinished) override;
+#endif
+
 	UPROPERTY(EditInstanceOnly, Category="AI Character")
 	ACombatSituation* CombatSituation {nullptr};
+
 };

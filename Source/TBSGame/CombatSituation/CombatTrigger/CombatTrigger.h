@@ -10,6 +10,9 @@ class ACombatSituation;
 class UBoxComponent;
 class ADeploymentZone;
 
+/**
+ * Combat trigger is obsolete now and is not being used.
+ */
 UCLASS()
 class TBSGAME_API ACombatTrigger : public AActor
 {

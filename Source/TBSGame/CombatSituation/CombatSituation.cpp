@@ -2,7 +2,6 @@
 
 
 #include "CombatSituation/CombatSituation.h"
-
 #include "Character/AICharacter/TBSAICharacter.h"
 #include "DeploymentZone/DeploymentZone.h"
 #include "Game/TBSGameState.h"
@@ -25,6 +24,7 @@ void ACombatSituation::BeginPlay()
 	check(GridActor);
 	PlayerParticipants.Reset();
 	EnemyParticipants.Reset();
+	check(DeploymentZones.Num() > 0);
 }
 
 void ACombatSituation::StartCombatSituation(ADeploymentZone* InDeploymentZone)
@@ -32,7 +32,7 @@ void ACombatSituation::StartCombatSituation(ADeploymentZone* InDeploymentZone)
 	if (!bIsActive)
 	{
 		bIsActive = true;
-		DeploymentZone = InDeploymentZone;
+		SelectedDeploymentZone = InDeploymentZone;
 		GameState->StartDeploymentPhase(this);
 		GameState->GamePhaseChangedEvent.AddDynamic(this, &ThisClass::OnGamePhaseChanged);
 	}
@@ -40,7 +40,7 @@ void ACombatSituation::StartCombatSituation(ADeploymentZone* InDeploymentZone)
 
 ADeploymentZone* ACombatSituation::GetDeploymentZone() const
 {
-	return DeploymentZone;
+	return SelectedDeploymentZone;
 }
 
 
@@ -58,6 +58,13 @@ bool ACombatSituation::GetIsPlayersTurn() const
 {
 	// TODO: 
 	return true;
+}
+
+void ACombatSituation::StartDeploymentSelection()
+{
+	// TODO: Make ui for selecting the deployment zone and start combat there.
+
+	StartCombatSituation(DeploymentZones[0]);
 }
 
 void ACombatSituation::OnGamePhaseChanged(EGamePhase GamePhase)

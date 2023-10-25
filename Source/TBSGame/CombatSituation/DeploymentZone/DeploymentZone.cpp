@@ -2,8 +2,6 @@
 
 
 #include "CombatSituation/DeploymentZone/DeploymentZone.h"
-
-#include "EngineUtils.h"
 #include "Components/BoxComponent.h"
 
 ADeploymentZone::ADeploymentZone()
