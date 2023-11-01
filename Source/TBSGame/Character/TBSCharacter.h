@@ -13,6 +13,7 @@ enum class EGamePhase : uint8;
 class AHeroAIController;
 class ATBSGameState;
 class UHealthComponent;
+class ACombatSituation;
 
 
 UCLASS()
@@ -29,6 +30,24 @@ public:
 	*/
 	void DeployCharacterOnGrid(AGridActor* GridActor, const FIntPoint& SourceIndex, const FIntPoint& TargetIndex);
 
+	/**
+	 * @brief Snaps the character to the grid in the combat situation
+	 * @return The index of the grid.
+	 */
+	UFUNCTION(CallInEditor, Category="AI Character")
+	FIntPoint SnapToGrid();
+
+	UPROPERTY(EditAnywhere)
+	bool bIsAI {false};
+
+	
+#if WITH_EDITOR
+	virtual void PostEditMove(bool bFinished) override;
+#endif
+
+	UPROPERTY(EditInstanceOnly, Category="AI Character")
+	ACombatSituation* CombatSituation {nullptr};
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

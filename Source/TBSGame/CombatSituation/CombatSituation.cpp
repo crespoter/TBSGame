@@ -2,7 +2,8 @@
 
 
 #include "CombatSituation/CombatSituation.h"
-#include "Character/AICharacter/TBSAICharacter.h"
+
+#include "Character/TBSCharacter.h"
 #include "DeploymentZone/DeploymentZone.h"
 #include "Game/TBSGameState.h"
 #include "Game/TBSTypes.h"
@@ -49,7 +50,7 @@ AGridActor* ACombatSituation::GetGridActor() const
 	return GridActor;
 }
 
-void ACombatSituation::RegisterAICombatant(ATBSAICharacter* AICombatant)
+void ACombatSituation::RegisterAICombatant(ATBSCharacter* AICombatant)
 {
 	EnemyParticipants.Emplace(AICombatant);
 }
@@ -83,7 +84,7 @@ void ACombatSituation::OnGamePhaseChanged(EGamePhase GamePhase)
 void ACombatSituation::AddEnemiesToGrid()
 {
 	check(GridActor);
-	for (ATBSAICharacter* Character : EnemyParticipants)
+	for (ATBSCharacter* Character : EnemyParticipants)
 	{
 		FIntPoint Idx = Character->SnapToGrid();
 		GridActor->GetGridStateComponent()->SetCharacterUnitAtIndex(Idx, Character);

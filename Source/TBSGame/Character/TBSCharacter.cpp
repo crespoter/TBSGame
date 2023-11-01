@@ -2,6 +2,8 @@
 
 #include "ActorComponents/Health/HealthComponent.h"
 #include "AI/HeroAIController/HeroAIController.h"
+#include "CombatSituation/CombatSituation.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "Game/TBSGameState.h"
 #include "GridSystem/GridActor/GridActor.h"
@@ -42,6 +44,12 @@ void ATBSCharacter::BeginPlay()
 
 	HealthComponent->HealthChangedDelegate.AddDynamic(this, &ThisClass::ATBSCharacter::OnHealthChanged);
 	HealthComponent->HealthDepletedDelegate.AddDynamic(this, &ThisClass::ATBSCharacter::OnHealthDepleted);
+
+	if (bIsAI)
+	{
+		check(CombatSituation);
+		CombatSituation->RegisterAICombatant(this);
+	}
 }
 
 // Called every frame
@@ -56,6 +64,33 @@ void ATBSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
+
+FIntPoint ATBSCharacter::SnapToGrid()
+{
+	check(CombatSituation);
+	AGridActor* GridActor = CombatSituation->GetGridActor();
+	check(GridActor);
+	if (!GridActor->GetIsGridGenerated())
+	{
+		GridActor->GenerateGrid();
+	}
+	FIntPoint GridIndex;
+	FVector GridLocation = GridActor->GetNearestGridLocation(GetActorLocation(), GridIndex);
+	GridLocation.Z += GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+	SetActorLocation(GridLocation);
+	return GridIndex;
+}
+
+#if WITH_EDITOR
+void ATBSCharacter::PostEditMove(bool bFinished)
+{
+	Super::PostEditMove(bFinished);
+	if (CombatSituation && bFinished)
+	{
+		SnapToGrid();
+	}
+}
+#endif
 
 
 void ATBSCharacter::OnGamePhaseChanged(const EGamePhase NewGamePhase)

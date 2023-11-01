@@ -53,5 +53,12 @@ private:
 
 	bool bIsSelected {false};
 
+	// Move action is cached so that we dont have to recalculate it
+	// everytime for the same unit.
+	// The cached move action can also be used by other abilities to calculate
+	// if the character can move within range to cast.
+	UPROPERTY()
+	UMoveGridAction* CurrentMoveAction {nullptr};
+
 
 };

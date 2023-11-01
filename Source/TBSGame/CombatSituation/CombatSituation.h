@@ -41,7 +41,7 @@ public:
 	FORCEINLINE AGridActor* GetGridActor() const;
 
 	UFUNCTION()
-	void RegisterAICombatant(ATBSAICharacter* AICombatant);
+	void RegisterAICombatant(ATBSCharacter* AICombatant);
 
 	UFUNCTION()
 	bool GetIsPlayersTurn() const;
@@ -69,7 +69,7 @@ private:
     TSet<ATBSCharacter*> PlayerParticipants;
 
 	UPROPERTY()
-	TSet<ATBSAICharacter*> EnemyParticipants;
+	TSet<ATBSCharacter*> EnemyParticipants;
 	
 	UPROPERTY()
 	ATBSGameState* GameState {nullptr};
